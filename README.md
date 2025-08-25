@@ -84,19 +84,6 @@ go build -o axion
 ./axion
 ```
 
-### Optional: Global Installation
-```bash
-# Make install script executable
-chmod +x install.sh
-
-# Install globally (requires sudo for system-wide)
-sudo ./install.sh
-
-# Or install locally
-./install.sh --local
-```
-
-
 
 ---
 
@@ -277,20 +264,6 @@ We welcome contributions! Here's how you can help:
 6. Commit your changes (`git commit -m 'Add amazing feature'`)
 7. Push to the branch (`git push origin feature/amazing-feature`)
 8. Open a Pull Request
-
-### Development Guidelines
-- Follow Go coding standards and conventions
-- Write comprehensive tests for new features
-- Update documentation for API changes
-- Ensure backwards compatibility when possible
-
-### Areas for Contribution
-- [ ] Additional mathematical functions
-- [ ] More unit conversion categories
-- [ ] GUI interface
-- [ ] Plugin system
-- [ ] Configuration file support
-- [ ] Export/import functionality
 
 ---
 
