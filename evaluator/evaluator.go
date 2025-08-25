@@ -73,38 +73,78 @@ func Eval(node *parser.Node) (float64, error) {
 		}
 
 		switch node.Value {
-		case "sin":
-			return math.Sin(arg1 * math.Pi / 180), nil
-		case "cos":
-			return math.Cos(arg1 * math.Pi / 180), nil
-		case "tan":
-			return math.Tan(arg1 * math.Pi / 180), nil
+		case "sin", "cos", "tan":
+
+			radians := arg1 * math.Pi / 180
+			switch node.Value {
+			case "sin":
+				return math.Sin(radians), nil
+			case "cos":
+				return math.Cos(radians), nil
+			case "tan":
+				if math.Mod(arg1, 180) == 90 {
+					return 0, fmt.Errorf("tan(%g°): undefined (asymptote)", arg1)
+				}
+				return math.Tan(radians), nil
+			}
+
 		case "asin":
+			if arg1 < -1 || arg1 > 1 {
+				return 0, fmt.Errorf("asin: domain error - input must be between -1 and 1, got %g", arg1)
+			}
 			return math.Asin(arg1) * 180 / math.Pi, nil
+
 		case "acos":
+			if arg1 < -1 || arg1 > 1 {
+				return 0, fmt.Errorf("acos: domain error - input must be between -1 and 1, got %g", arg1)
+			}
 			return math.Acos(arg1) * 180 / math.Pi, nil
+
 		case "atan":
 			return math.Atan(arg1) * 180 / math.Pi, nil
+
 		case "log":
+			if arg1 <= 0 {
+				return 0, fmt.Errorf("log: domain error - logarithm undefined for non-positive numbers, got %g", arg1)
+			}
 			return math.Log(arg1), nil
+
 		case "log10":
+			if arg1 <= 0 {
+				return 0, fmt.Errorf("log10: domain error - logarithm undefined for non-positive numbers, got %g", arg1)
+			}
 			return math.Log10(arg1), nil
+
 		case "sqrt":
+			if arg1 < 0 {
+				return 0, fmt.Errorf("sqrt: domain error - cannot take square root of negative number, got %g", arg1)
+			}
 			return math.Sqrt(arg1), nil
+
 		case "exp":
+			if arg1 > 709 {
+				return 0, fmt.Errorf("exp: overflow error - exp(%g) would exceed maximum representable value", arg1)
+			}
 			return math.Exp(arg1), nil
-		case "abs":
-			return math.Abs(arg1), nil
-		case "ceil":
-			return math.Ceil(arg1), nil
-		case "floor":
-			return math.Floor(arg1), nil
+
+		case "abs", "ceil", "floor":
+
+			switch node.Value {
+			case "abs":
+				return math.Abs(arg1), nil
+			case "ceil":
+				return math.Ceil(arg1), nil
+			case "floor":
+				return math.Floor(arg1), nil
+			}
+
 		case "!":
 			val, err := factorial(arg1)
 			if err != nil {
 				return 0, err
 			}
 			return val, nil
+
 		case "pow", "max", "min":
 			if len(node.Children) < 2 {
 				return 0, fmt.Errorf("function %q requires 2 arguments", node.Value)
@@ -113,14 +153,26 @@ func Eval(node *parser.Node) (float64, error) {
 			if err != nil {
 				return 0, err
 			}
+
 			switch node.Value {
 			case "pow":
-				return math.Pow(arg1, arg2), nil
+				if arg1 == 0 && arg2 < 0 {
+					return 0, fmt.Errorf("pow: domain error - 0 raised to negative power is undefined")
+				}
+				if arg1 < 0 && arg2 != math.Floor(arg2) {
+					return 0, fmt.Errorf("pow: domain error - negative base with non-integer exponent")
+				}
+				result := math.Pow(arg1, arg2)
+				if math.IsInf(result, 0) {
+					return 0, fmt.Errorf("pow: overflow error - pow(%g, %g) exceeds representable range", arg1, arg2)
+				}
+				return result, nil
 			case "max":
 				return math.Max(arg1, arg2), nil
 			case "min":
 				return math.Min(arg1, arg2), nil
 			}
+
 		default:
 			return 0, fmt.Errorf("unknown function %q", node.Value)
 		}
