@@ -97,16 +97,16 @@ func Tokenize(input string) ([]Token, error) {
 				tokens = append(tokens, Token{Type: FUNCTION, Value: wordBuffer})
 				wordBuffer = ""
 			}
-case ch == ',':
-    if numberBuffer != "" {
-        tokens = append(tokens, Token{Type: NUMBER, Value: numberBuffer})
-        numberBuffer = ""
-    }
-    if wordBuffer != "" {
-        tokens = append(tokens, Token{Type: FUNCTION, Value: wordBuffer})
-        wordBuffer = ""
-    }
-    tokens = append(tokens, Token{Type: OPERATOR, Value: ","})
+		case ch == ',':
+			if numberBuffer != "" {
+				tokens = append(tokens, Token{Type: NUMBER, Value: numberBuffer})
+				numberBuffer = ""
+			}
+			if wordBuffer != "" {
+				tokens = append(tokens, Token{Type: FUNCTION, Value: wordBuffer})
+				wordBuffer = ""
+			}
+			tokens = append(tokens, Token{Type: OPERATOR, Value: ","})
 		default:
 			return nil, fmt.Errorf("invalid character: %q", ch)
 		}
