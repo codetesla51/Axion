@@ -188,8 +188,8 @@ Result: 9216
 Result: 1
 
 # Complex calculations
->> (sqrt(144) + 8!) / (factorial(3) * 2^4)
-Result: 4201.25
+>> (sqrt(144) + 8!) / (3! * 2^4)  
+Result: 420.125
 
 # Scientific calculations
 >> log(2.71828) + exp(0)
