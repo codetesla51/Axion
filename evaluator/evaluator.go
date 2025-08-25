@@ -11,6 +11,11 @@ func factorial(n float64) (float64, error) {
 	if n < 0 || n != math.Floor(n) {
 		return 0, fmt.Errorf("factorial only defined for non-negative integers")
 	}
+	// IEEE 754 double precision can represent up to approximately 170!
+	// 171! ≈ 1.24e+309, which exceeds the maximum finite float64 value
+	if n > 170 {
+		return 0, fmt.Errorf("factorial too large: %g! exceeds maximum representable value (limit: 170!)", n)
+	}
 	result := 1.0
 	for i := 2; i <= int(n); i++ {
 		result *= float64(i)

@@ -30,5 +30,21 @@
   {
     "expression": "log(2.71828) + exp(0)",
     "result": 1.999999327347282
+  },
+  {
+    "expression": "sqrt(16)",
+    "result": 4
+  },
+  {
+    "expression": "pow(2 ,3)",
+    "result": 8
+  },
+  {
+    "expression": "2^3",
+    "result": 8
+  },
+  {
+    "expression": "980!",
+    "result": 0
   }
 ]
