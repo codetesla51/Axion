@@ -1,4 +1,5 @@
 package parser
+
 import (
 	"Axion/tokenizer"
 )
@@ -42,14 +43,28 @@ func (p *Parser) parseAddSub() *Node {
 	}
 	return node
 }
+func (p *Parser) parseExponent() *Node {
+	node := p.parseFactor() // left-hand side
+	for p.pos < len(p.Tokens) {
+		tok := p.Tokens[p.pos]
+		if tok.Type == tokenizer.OPERATOR && tok.Value == "^" {
+			p.pos++
+			right := p.parseFactor() // right-hand side
+			node = &Node{Type: NODE_OPERATOR, Value: tok.Value, Left: node, Right: right}
+		} else {
+			break
+		}
+	}
+	return node
+}
 
 func (p *Parser) parseMulDiv() *Node {
-	node := p.parseFactor()
+	node := p.parseExponent()
 	for p.pos < len(p.Tokens) {
 		tok := p.Tokens[p.pos]
 		if tok.Type == tokenizer.OPERATOR && (tok.Value == "*" || tok.Value == "/") {
 			p.pos++
-			right := p.parseFactor()
+			right := p.parseExponent()
 			node = &Node{Type: NODE_OPERATOR, Value: tok.Value, Left: node, Right: right}
 		} else {
 			break
@@ -65,22 +80,34 @@ func (p *Parser) parseFactor() *Node {
 	tok := p.Tokens[p.pos]
 	p.pos++
 
+	var node *Node
+
 	switch tok.Type {
 	case tokenizer.NUMBER:
-		return &Node{Type: NODE_NUMBER, Value: tok.Value}
+		node = &Node{Type: NODE_NUMBER, Value: tok.Value}
 	case tokenizer.FUNCTION:
 		if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "(" {
 			p.pos++ // skip '('
 			arg := p.ParseExpression()
 			p.pos++ // skip ')'
-			return &Node{Type: NODE_FUNCTION, Value: tok.Value, Children: []*Node{arg}}
+			node = &Node{Type: NODE_FUNCTION, Value: tok.Value, Children: []*Node{arg}}
+		} else {
+			node = &Node{Type: NODE_FUNCTION, Value: tok.Value}
 		}
 	case tokenizer.PAREN:
 		if tok.Value == "(" {
-			node := p.ParseExpression()
+			node = p.ParseExpression()
 			p.pos++ // skip ')'
-			return node
 		}
 	}
-	return nil
+	if p.pos < len(p.Tokens) && p.Tokens[p.pos].Type == tokenizer.FUNCTION && p.Tokens[p.pos].Value == "!" {
+		p.pos++
+		node = &Node{
+			Type:     NODE_FUNCTION,
+			Value:    "!",
+			Children: []*Node{node},
+		}
+	}
+
+	return node
 }
