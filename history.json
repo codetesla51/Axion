@@ -46,5 +46,13 @@
   {
     "expression": "980!",
     "result": 0
+  },
+  {
+    "expression": "170!",
+    "result": 7.257415615307994e+306
+  },
+  {
+    "expression": "sqrt(4)",
+    "result": 2
   }
 ]

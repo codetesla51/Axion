@@ -102,7 +102,7 @@ func Eval(node *parser.Node) (float64, error) {
 		case "!":
 			val, err := factorial(arg1)
 			if err != nil {
-				return 0, nil
+				return 0, err
 			}
 			return val, nil
 		case "pow", "max", "min":
