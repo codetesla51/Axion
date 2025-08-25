@@ -45,6 +45,7 @@ import (
 	"Axion/units"
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"strings"
 )
@@ -131,8 +132,15 @@ func main() {
 				fmt.Println("Error:", err)
 				continue
 			}
-
-			fmt.Printf("Result: %g\n", result)
+			if math.IsNaN(result) {
+				fmt.Println("Result: undefined (NaN)")
+			} else if math.IsInf(result, 1) {
+				fmt.Println("Result: +∞")
+			} else if math.IsInf(result, -1) {
+				fmt.Println("Result: -∞")
+			} else {
+				fmt.Printf("Result: %g\n", result)
+			}
 
 			err = history.AddHistory(input, result)
 			if err != nil {
