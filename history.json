@@ -54,5 +54,9 @@
   {
     "expression": "sqrt(4)",
     "result": 2
+  },
+  {
+    "expression": "sin(cos(tan(90)))",
+    "result": 0.0151189592776839
   }
 ]
