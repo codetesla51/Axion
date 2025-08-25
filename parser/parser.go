@@ -86,14 +86,29 @@ func (p *Parser) parseFactor() *Node {
 	case tokenizer.NUMBER:
 		node = &Node{Type: NODE_NUMBER, Value: tok.Value}
 	case tokenizer.FUNCTION:
-		if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "(" {
-			p.pos++ // skip '('
-			arg := p.ParseExpression()
-			p.pos++ // skip ')'
-			node = &Node{Type: NODE_FUNCTION, Value: tok.Value, Children: []*Node{arg}}
-		} else {
-			node = &Node{Type: NODE_FUNCTION, Value: tok.Value}
-		}
+    if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "(" {
+        p.pos++ // skip '('
+        
+        var args []*Node
+        
+        // Parse first argument
+        if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value != ")" {
+            arg := p.ParseExpression()
+            args = append(args, arg)
+            
+            // Parse additional arguments separated by commas
+            for p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "," {
+                p.pos++ // skip ','
+                arg = p.ParseExpression()
+                args = append(args, arg)
+            }
+        }
+        
+        p.pos++ // skip ')'
+        node = &Node{Type: NODE_FUNCTION, Value: tok.Value, Children: args}
+    } else {
+        node = &Node{Type: NODE_FUNCTION, Value: tok.Value}
+    }
 	case tokenizer.PAREN:
 		if tok.Value == "(" {
 			node = p.ParseExpression()
