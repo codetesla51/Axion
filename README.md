@@ -2,7 +2,8 @@
 
 <div align="center">
 
-**A powerful, feature-rich CLI calculator built with Go**
+**A powerful, high-precision mathematical engine with CLI interface, built in Go
+**
 
 [![Go Version](https://img.shields.io/badge/Go-1.24.5-00ADD8?style=flat-square&logo=go)](https://golang.org)
 [![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen?style=flat-square&logo=checkmarx)](https://github.com/codetesla51/Axion)
