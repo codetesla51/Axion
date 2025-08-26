@@ -115,7 +115,7 @@ func Eval(node *parser.Node) (float64, error) {
 			if arg1 <= 0 {
 				return 0, fmt.Errorf("log: domain error - logarithm undefined for non-positive numbers, got %g", arg1)
 			}
-			return math.Log(arg1), nil
+			return math.Log(arg1), err
 
 		case "log10":
 			if arg1 <= 0 {
