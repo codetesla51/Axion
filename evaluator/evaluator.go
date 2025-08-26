@@ -110,12 +110,11 @@ func Eval(node *parser.Node) (float64, error) {
 
 		case "atan":
 			return math.Atan(arg1) * 180 / math.Pi, nil
-
 		case "log":
 			if arg1 <= 0 {
 				return 0, fmt.Errorf("log: domain error - logarithm undefined for non-positive numbers, got %g", arg1)
 			}
-			return math.Log(arg1), err
+			return math.Log(arg1), nil
 
 		case "log10":
 			if arg1 <= 0 {

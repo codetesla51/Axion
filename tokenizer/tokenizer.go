@@ -28,9 +28,9 @@ func Tokenize(input string) ([]Token, error) {
 		// Check for implicit multiplication
 		if len(tokens) > 0 {
 			last := tokens[len(tokens)-1]
-			if (last.Type == NUMBER || (last.Type == PAREN && last.Value == ")")) &&
+			if t.Type == FUNCTION && t.Value == "!" {
+			} else if (last.Type == NUMBER || (last.Type == PAREN && last.Value == ")")) &&
 				(t.Type == NUMBER || t.Type == FUNCTION || (t.Type == PAREN && t.Value == "(")) {
-				// Insert multiplication
 				tokens = append(tokens, Token{Type: OPERATOR, Value: "*"})
 			}
 		}
