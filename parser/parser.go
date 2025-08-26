@@ -45,14 +45,12 @@ func (p *Parser) parseAddSub() *Node {
 }
 func (p *Parser) parseExponent() *Node {
 	node := p.parseFactor() // left-hand side
-	for p.pos < len(p.Tokens) {
+	if p.pos < len(p.Tokens) {
 		tok := p.Tokens[p.pos]
 		if tok.Type == tokenizer.OPERATOR && tok.Value == "^" {
 			p.pos++
-			right := p.parseFactor() // right-hand side
-			node = &Node{Type: NODE_OPERATOR, Value: tok.Value, Left: node, Right: right}
-		} else {
-			break
+			right := p.parseExponent() // recurse for right-associativity
+			node = &Node{Type: NODE_OPERATOR, Value: "^", Left: node, Right: right}
 		}
 	}
 	return node
@@ -72,12 +70,28 @@ func (p *Parser) parseMulDiv() *Node {
 	}
 	return node
 }
-
 func (p *Parser) parseFactor() *Node {
 	if p.pos >= len(p.Tokens) {
 		return nil
 	}
+
+	// Unary + / -
 	tok := p.Tokens[p.pos]
+	if tok.Type == tokenizer.OPERATOR && (tok.Value == "-" || tok.Value == "+") {
+		p.pos++
+		child := p.parseFactor()
+		if tok.Value == "-" {
+			return &Node{
+				Type:  NODE_OPERATOR,
+				Value: "neg",
+				Left:  child,
+			}
+		}
+		return child // unary plus
+	}
+
+	// Regular token
+	tok = p.Tokens[p.pos]
 	p.pos++
 
 	var node *Node
@@ -85,20 +99,20 @@ func (p *Parser) parseFactor() *Node {
 	switch tok.Type {
 	case tokenizer.NUMBER:
 		node = &Node{Type: NODE_NUMBER, Value: tok.Value}
+
 	case tokenizer.FUNCTION:
 		if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "(" {
 			p.pos++ // skip '('
-
 			var args []*Node
 
-			// Parse first argument
+			// First argument
 			if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value != ")" {
 				arg := p.ParseExpression()
 				args = append(args, arg)
 
-				// Parse additional arguments separated by commas
+				// Additional arguments
 				for p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "," {
-					p.pos++ // skip ','
+					p.pos++
 					arg = p.ParseExpression()
 					args = append(args, arg)
 				}
@@ -109,12 +123,15 @@ func (p *Parser) parseFactor() *Node {
 		} else {
 			node = &Node{Type: NODE_FUNCTION, Value: tok.Value}
 		}
+
 	case tokenizer.PAREN:
 		if tok.Value == "(" {
 			node = p.ParseExpression()
 			p.pos++ // skip ')'
 		}
 	}
+
+	// Factorial postfix
 	if p.pos < len(p.Tokens) && p.Tokens[p.pos].Type == tokenizer.FUNCTION && p.Tokens[p.pos].Value == "!" {
 		p.pos++
 		node = &Node{
