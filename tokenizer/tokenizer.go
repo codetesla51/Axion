@@ -18,6 +18,7 @@ type Token struct {
 	Type  TokenType
 	Value string
 }
+
 func Tokenize(input string) ([]Token, error) {
 	var tokens []Token
 	var numberBuffer string

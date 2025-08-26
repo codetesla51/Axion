@@ -36,14 +36,14 @@ func Eval(node *parser.Node) (float64, error) {
 		return val, nil
 
 	case parser.NODE_OPERATOR:
-	// Unary minus
-	if node.Value == "neg" {
-		left, err := Eval(node.Left)
-		if err != nil {
-			return 0, err
+		// Unary minus
+		if node.Value == "neg" {
+			left, err := Eval(node.Left)
+			if err != nil {
+				return 0, err
+			}
+			return -left, nil
 		}
-		return -left, nil
-	}
 		left, err := Eval(node.Left)
 		if err != nil {
 			return 0, err
