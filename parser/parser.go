@@ -10,7 +10,7 @@ Operator Precedence (highest to lowest):
 1. Primary expressions (numbers, functions, parentheses)
 2. Postfix operators (factorial !)
 3. Exponentiation (^) - right associative
-4. Unary operators (+, -)
+4. Unary operators (+, -) 
 5. Multiplication and division (*, /) - left associative
 6. Addition and subtraction (+, -) - left associative
 
@@ -39,11 +39,11 @@ const (
 
 // Node represents a single node in the Abstract Syntax Tree
 type Node struct {
-	Type     NodeType // Node classification for evaluation
-	Value    string   // Node content (number, operator symbol, function name)
-	Left     *Node    // Left operand for binary operators
-	Right    *Node    // Right operand for binary operators
-	Children []*Node  // Argument list for function calls
+	Type     NodeType  // Node classification for evaluation
+	Value    string    // Node content (number, operator symbol, function name)
+	Left     *Node     // Left operand for binary operators
+	Right    *Node     // Right operand for binary operators
+	Children []*Node   // Argument list for function calls
 }
 
 // Parser maintains parsing state during recursive descent
@@ -62,12 +62,12 @@ func (p *Parser) ParseExpression() *Node {
 func (p *Parser) parseAddSub() *Node {
 	// Parse left operand at higher precedence level
 	node := p.parseMulDiv()
-
+	
 	// Continue parsing same-level operators with left associativity
 	for p.pos < len(p.Tokens) {
 		tok := p.Tokens[p.pos]
 		if tok.Type == tokenizer.OPERATOR && (tok.Value == "+" || tok.Value == "-") {
-			p.pos++                  // Consume operator token
+			p.pos++ // Consume operator token
 			right := p.parseMulDiv() // Parse right operand
 			// Create binary operator node with left associativity
 			node = &Node{Type: NODE_OPERATOR, Value: tok.Value, Left: node, Right: right}
@@ -83,12 +83,12 @@ func (p *Parser) parseAddSub() *Node {
 func (p *Parser) parseMulDiv() *Node {
 	// Parse left operand at higher precedence level
 	node := p.parseUnary()
-
+	
 	// Continue parsing same-level operators with left associativity
 	for p.pos < len(p.Tokens) {
 		tok := p.Tokens[p.pos]
 		if tok.Type == tokenizer.OPERATOR && (tok.Value == "*" || tok.Value == "/") {
-			p.pos++                 // Consume operator token
+			p.pos++ // Consume operator token
 			right := p.parseUnary() // Parse right operand
 			// Create binary operator node with left associativity
 			node = &Node{Type: NODE_OPERATOR, Value: tok.Value, Left: node, Right: right}
@@ -134,14 +134,14 @@ func (p *Parser) parseUnary() *Node {
 func (p *Parser) parseExponent() *Node {
 	// Parse base operand at higher precedence level
 	node := p.parsePostfix()
-
+	
 	// Check for exponentiation operator
 	if p.pos < len(p.Tokens) {
 		tok := p.Tokens[p.pos]
 		if tok.Type == tokenizer.OPERATOR && tok.Value == "^" {
 			p.pos++ // Consume exponentiation operator
 			// Right associativity: parse exponent at same precedence level
-			right := p.parseExponent()
+			right := p.parseUnary()
 			return &Node{Type: NODE_OPERATOR, Value: "^", Left: node, Right: right}
 		}
 	}
