@@ -1,38 +1,28 @@
 /*
-Axion CLI Calculator
---------------------
+Axion CLI Calculator - Main Entry Point
+========================================
 Author: Uthman
 Year: 2025
-GitHub: https://github.com/codetesla51/Axion
-License: MIT
 
-This is a simple CLI calculator with support for:
-- Evaluating math expressions
-- Unit conversion (e.g., convert 10 km to m)
-- Calculation history
-- Built-in math functions: sin, cos, tan, log, sqrt, factorial, etc.
+This file implements the main command-line interface for the Axion calculator.
+It provides a REPL (Read-Eval-Print-Loop) that processes user input and delegates
+to appropriate modules for mathematical expression evaluation, unit conversion,
+and history management.
 
-MIT License
+The expression evaluation pipeline follows this sequence:
+1. Input string -> Tokenizer (lexical analysis)
+2. Tokens -> Parser (syntax analysis, AST construction)
+3. AST -> Evaluator (expression evaluation)
+4. Result -> History storage and display
 
-Copyright (c) 2025 Uthman
+Supported commands:
+- Mathematical expressions: evaluated through the tokenizer->parser->evaluator pipeline
+- Unit conversions: handled by the units module
+- History display: managed by the history module
+- Help and exit commands
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Error handling is implemented at each stage to provide meaningful feedback
+for invalid input, mathematical errors, and system failures.
 */
 
 package main
@@ -50,6 +40,7 @@ import (
 	"strings"
 )
 
+// printHelp displays available commands and usage examples to the user
 func printHelp() {
 	fmt.Println("Axion CLI Calculator")
 	fmt.Println("--------------------")
@@ -63,21 +54,32 @@ func printHelp() {
 }
 
 func main() {
+	// Initialize scanner for reading from standard input
 	scanner := bufio.NewScanner(os.Stdin)
 
 	fmt.Println("Welcome to Axion Calculator! Type 'help' for commands.")
+
+	// Main REPL loop - continues until user exits or EOF
 	for {
 		fmt.Print(">> ")
+
+		// Read next line of input
 		if !scanner.Scan() {
+			// EOF reached (Ctrl+D on Unix, Ctrl+Z on Windows)
 			break
 		}
+
+		// Clean input by removing leading and trailing whitespace
 		input := strings.TrimSpace(scanner.Text())
 
+		// Skip processing empty lines
 		if input == "" {
 			continue
 		}
 
+		// Process input based on command type
 		switch {
+
 		case input == "exit":
 			fmt.Println("Goodbye!")
 			return
@@ -90,7 +92,9 @@ func main() {
 			history.ShowHistory()
 			continue
 
+		// Handle unit conversion commands with format: "convert <value> <from> to <to>"
 		case strings.HasPrefix(input, "convert "):
+			// Parse conversion command into components
 			parts := strings.Fields(input)
 			if len(parts) != 5 || parts[3] != "to" {
 				fmt.Println("Usage: convert <value> <from> to <to>")
@@ -98,10 +102,12 @@ func main() {
 				continue
 			}
 
+			// Extract conversion parameters
 			valueStr := parts[1]
 			from := parts[2]
 			to := parts[4]
 
+			// Parse numeric value from string
 			var value float64
 			_, err := fmt.Sscanf(valueStr, "%f", &value)
 			if err != nil {
@@ -109,29 +115,39 @@ func main() {
 				continue
 			}
 
+			// Perform unit conversion
 			result, err := units.Convert(value, from, to)
 			if err != nil {
 				fmt.Println("Conversion error:", err)
 				continue
 			}
 
+			// Display conversion result
 			fmt.Printf("%g %s = %g %s\n", value, from, result, to)
 			continue
 
+		// Default case: treat input as mathematical expression
 		default:
+			// Stage 1: Tokenization - convert input string to token sequence
 			tokens, err := tokenizer.Tokenize(input)
 			if err != nil {
 				fmt.Println("Error:", err)
 				continue
 			}
+
+			// Stage 2: Parsing - construct AST from tokens with proper precedence
 			p := parser.Parser{Tokens: tokens}
 			ast := p.ParseExpression()
 
+			// Stage 3: Evaluation - traverse AST and compute result
 			result, err := evaluator.Eval(ast)
 			if err != nil {
 				fmt.Println("Error:", err)
 				continue
 			}
+
+			// Stage 4: Result formatting and display
+			// Handle special floating-point values
 			if math.IsNaN(result) {
 				fmt.Println("Result: undefined (NaN)")
 			} else if math.IsInf(result, 1) {
@@ -139,11 +155,14 @@ func main() {
 			} else if math.IsInf(result, -1) {
 				fmt.Println("Result: -∞")
 			} else {
+				// Use %g format for automatic precision and scientific notation
 				fmt.Printf("Result: %g\n", result)
 			}
 
+			// Stage 5: History persistence - save calculation for future reference
 			err = history.AddHistory(input, result)
 			if err != nil {
+				// History failure is non-critical, continue operation
 				fmt.Println("Failed to save history:", err)
 			}
 		}
