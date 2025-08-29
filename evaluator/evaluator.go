@@ -162,14 +162,14 @@ func Eval(node *parser.Node) (float64, error) {
 			return math.Atan(arg1) * 180 / math.Pi, nil
 
 		// Logarithmic functions
-		case "log":
+		case "ln":
 			// Natural logarithm: domain restriction to positive reals
 			if arg1 <= 0 {
 				return 0, fmt.Errorf("log: domain error - logarithm undefined for non-positive numbers, got %g", arg1)
 			}
 			return math.Log(arg1), nil
 
-		case "log10":
+		case "log":
 			// Base-10 logarithm: domain restriction to positive reals
 			if arg1 <= 0 {
 				return 0, fmt.Errorf("log10: domain error - logarithm undefined for non-positive numbers, got %g", arg1)
