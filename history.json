@@ -1,0 +1,26 @@
+[
+  {
+    "expression": "x = 6",
+    "result": 6
+  },
+  {
+    "expression": "5 + 6",
+    "result": 11
+  },
+  {
+    "expression": "5 + x",
+    "result": 11
+  },
+  {
+    "expression": "x",
+    "result": 6
+  },
+  {
+    "expression": "myVar = 700",
+    "result": 700
+  },
+  {
+    "expression": "500 + myVar",
+    "result": 1200
+  }
+]
