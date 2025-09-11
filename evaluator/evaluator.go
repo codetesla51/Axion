@@ -27,6 +27,7 @@ import (
 	"math"
 	"strconv"
 )
+    var Vars = make(map[string]float64)
 
 // factorial computes the factorial function with overflow protection
 // Returns error for negative inputs, non-integers, or values exceeding IEEE 754 limits
@@ -67,8 +68,20 @@ func Eval(node *parser.Node) (float64, error) {
 			return 0, fmt.Errorf("invalid number %q", node.Value)
 		}
 		return val, nil
+case parser.NODE_ASSIGN:
+    val, err := Eval(node.Right)
+    if err != nil {
+        return 0, err
+    }
+    Vars[node.Value] = val
+    return val, nil
 
-	// Recursive case: binary and unary operators
+    case parser.NODE_IDENTIFIER:
+    if v, ok := Vars[node.Value]; ok {
+        return v, nil
+    }
+    return 0, fmt.Errorf("undefined variable %s", node.Value)
+
 	case parser.NODE_OPERATOR:
 		// Handle unary negation operator
 		if node.Value == "neg" {

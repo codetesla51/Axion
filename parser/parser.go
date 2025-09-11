@@ -35,6 +35,8 @@ const (
         NODE_NUMBER   NodeType = iota // Terminal nodes containing numeric literals
         NODE_OPERATOR                 // Internal nodes representing operations
         NODE_FUNCTION                 // Function call nodes with argument lists
+        NODE_ASSIGN
+        NODE_IDENTIFIER
 )
 
 // Node represents a single node in the Abstract Syntax Tree
@@ -54,11 +56,30 @@ type Parser struct {
 
 // ParseExpression initiates parsing at the lowest precedence level
 func (p *Parser) ParseExpression() *Node {
-        return p.parseAddSub()
+        return p.parseAssignment()
 }
 
 // parseAddSub handles addition and subtraction (precedence level 1 - lowest)
 // Implements left associativity: a - b + c = ((a - b) + c)
+func (p *Parser) parseAssignment() *Node {
+    if p.pos+1 < len(p.Tokens) &&
+       p.Tokens[p.pos].Type == tokenizer.IDENT &&
+       p.Tokens[p.pos+1].Type == tokenizer.ASSIGN {
+
+        varName := p.Tokens[p.pos].Value
+        p.pos += 2 // skip IDENT and ASSIGN
+
+        rightNode := p.parseAddSub() // still a Node
+
+        return &Node{
+            Type:  NODE_ASSIGN, 
+            Value: varName,       // store variable name in Value
+            Right: rightNode,     // RHS of assignment
+        }
+    }
+
+    return p.parseAddSub()
+}
 func (p *Parser) parseAddSub() *Node {
         // Parse left operand at higher precedence level
         node := p.parseMulDiv()
@@ -190,7 +211,11 @@ func (p *Parser) parseFactor() *Node {
         // Handle numeric literals
         case tokenizer.NUMBER:
                 node = &Node{Type: NODE_NUMBER, Value: tok.Value}
-
+case tokenizer.IDENT:
+    node = &Node{
+        Type:  NODE_IDENTIFIER,
+        Value: tok.Value,
+    }
         // Handle function calls
         case tokenizer.FUNCTION:
                 // Special case: factorial should not be parsed as prefix function
