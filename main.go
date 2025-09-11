@@ -58,17 +58,17 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	fmt.Println("Welcome to Axion Calculator! Type 'help' for commands.")
-	
+
 	// Main REPL loop - continues until user exits or EOF
 	for {
 		fmt.Print(">> ")
-		
+
 		// Read next line of input
 		if !scanner.Scan() {
 			// EOF reached (Ctrl+D on Unix, Ctrl+Z on Windows)
 			break
 		}
-		
+
 		// Clean input by removing leading and trailing whitespace
 		input := strings.TrimSpace(scanner.Text())
 
@@ -79,7 +79,7 @@ func main() {
 
 		// Process input based on command type
 		switch {
-		
+
 		case input == "exit":
 			fmt.Println("Goodbye!")
 			return
@@ -136,12 +136,12 @@ func main() {
 
 			p := parser.Parser{Tokens: tokens}
 			ast := p.ParseExpression()
-			fmt.Printf("%+v\n", ast)
+			result, err := evaluator.Eval(ast)
 			if err != nil {
 				fmt.Println("Error:", err)
 				continue
 			}
-			
+
 			if math.IsNaN(result) {
 				fmt.Println("Result: undefined (NaN)")
 			} else if math.IsInf(result, 1) {

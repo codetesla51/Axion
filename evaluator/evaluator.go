@@ -27,7 +27,8 @@ import (
 	"math"
 	"strconv"
 )
-    var Vars = make(map[string]float64)
+
+var Vars = make(map[string]float64)
 
 // factorial computes the factorial function with overflow protection
 // Returns error for negative inputs, non-integers, or values exceeding IEEE 754 limits
@@ -68,19 +69,19 @@ func Eval(node *parser.Node) (float64, error) {
 			return 0, fmt.Errorf("invalid number %q", node.Value)
 		}
 		return val, nil
-case parser.NODE_ASSIGN:
-    val, err := Eval(node.Right)
-    if err != nil {
-        return 0, err
-    }
-    Vars[node.Value] = val
-    return val, nil
+	case parser.NODE_ASSIGN:
+		val, err := Eval(node.Right)
+		if err != nil {
+			return 0, err
+		}
+		Vars[node.Value] = val
+		return val, nil
 
-    case parser.NODE_IDENTIFIER:
-    if v, ok := Vars[node.Value]; ok {
-        return v, nil
-    }
-    return 0, fmt.Errorf("undefined variable %s", node.Value)
+	case parser.NODE_IDENTIFIER:
+		if v, ok := Vars[node.Value]; ok {
+			return v, nil
+		}
+		return 0, fmt.Errorf("undefined variable %s", node.Value)
 
 	case parser.NODE_OPERATOR:
 		// Handle unary negation operator
@@ -118,8 +119,8 @@ case parser.NODE_ASSIGN:
 			return left / right, nil
 		case "^":
 			// Exponentiation using standard library
-			if right > 500{
-			  return 0, fmt.Errorf("exponent too large: maximum allowed is 500")
+			if right > 500 {
+				return 0, fmt.Errorf("exponent too large: maximum allowed is 500")
 			}
 			return math.Pow(left, right), nil
 		default:

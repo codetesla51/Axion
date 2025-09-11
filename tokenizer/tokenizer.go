@@ -34,8 +34,8 @@ const (
 	OPERATOR                  // Mathematical operators: +, -, *, /, ^
 	PAREN                     // Parentheses: (, )
 	FUNCTION                  // Function identifiers: sin, cos, tan, log, sqrt, !
-	IDENT 
-   ASSIGN 
+	IDENT
+	ASSIGN
 )
 
 // Token represents a lexical unit with its classification and value
@@ -115,13 +115,13 @@ func Tokenize(input string) ([]Token, error) {
 
 		// Process alphabetic characters (function names)
 		case unicode.IsLetter(ch):
-    wordBuffer := string(ch) 
-    i++
-    for i < len(input) && (unicode.IsLetter(rune(input[i])) || unicode.IsDigit(rune(input[i]))) {
-        wordBuffer += string(input[i])
-        i++
-    }
-    tokens = append(tokens, Token{Type: IDENT, Value: wordBuffer})
+			wordBuffer := string(ch)
+			i++
+			for i < len(input) && (unicode.IsLetter(rune(input[i])) || unicode.IsDigit(rune(input[i]))) {
+				wordBuffer += string(input[i])
+				i++
+			}
+			tokens = append(tokens, Token{Type: IDENT, Value: wordBuffer})
 		// Process mathematical operators
 		case ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '^':
 			// Flush accumulated buffers before processing operator
@@ -134,8 +134,8 @@ func Tokenize(input string) ([]Token, error) {
 				wordBuffer = ""
 			}
 			addToken(Token{Type: OPERATOR, Value: string(ch)})
-case ch == '=':
-    tokens = append(tokens, Token{Type: ASSIGN, Value: "="})
+		case ch == '=':
+			tokens = append(tokens, Token{Type: ASSIGN, Value: "="})
 		// Process parentheses
 		case ch == '(' || ch == ')':
 			// Flush accumulated buffers before processing parenthesis
