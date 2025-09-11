@@ -133,12 +133,10 @@ func main() {
 				fmt.Println("Error:", err)
 				continue
 			}
-							fmt.Println("tokens", tokens)
 
 			p := parser.Parser{Tokens: tokens}
 			ast := p.ParseExpression()
 			fmt.Printf("%+v\n", ast)
-			result, err := evaluator.Eval(ast)
 			if err != nil {
 				fmt.Println("Error:", err)
 				continue
