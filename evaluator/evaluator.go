@@ -37,9 +37,6 @@ func factorial(n float64) (float64, error) {
 	}
 
 	// Prevent overflow: 170! is approximately 7.26e+306, 171! exceeds float64 maximum
-	if n > 170 {
-		return 0, fmt.Errorf("factorial too large: %g! exceeds maximum representable value (limit: 170!)", n)
-	}
 
 	// Compute factorial through iterative multiplication
 	result := 1.0
@@ -105,6 +102,9 @@ func Eval(node *parser.Node) (float64, error) {
 			return left / right, nil
 		case "^":
 			// Exponentiation using standard library
+			if right > 500{
+			  return 0, fmt.Errorf("exponent too large: maximum allowed is 500")
+			}
 			return math.Pow(left, right), nil
 		default:
 			return 0, fmt.Errorf("unknown operator %q", node.Value)

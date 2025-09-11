@@ -23,13 +23,30 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"math"
 )
 
 // Entry represents a single calculation record in the history
+type JsonFloat float64
+func (f JsonFloat) MarshalJSON() ([]byte, error) {
+	v := float64(f)
+
+	if math.IsInf(v, 1) {
+		return json.Marshal("+∞")
+	}
+	if math.IsInf(v, -1) {
+		return json.Marshal("-∞")
+	}
+	if math.IsNaN(v) {
+		return json.Marshal("NaN")
+	}
+	return json.Marshal(v)
+}
 type Entry struct {
 	Expression string  `json:"expression"` // Original mathematical expression
-	Result     float64 `json:"result"`     // Computed numerical result
+	Result     JsonFloat `json:"result"`     // Computed numerical result
 }
+
 
 // AddHistory appends a new calculation to the persistent history file
 // Handles file creation, existing data preservation, and atomic updates
@@ -63,7 +80,7 @@ func AddHistory(input string, result float64) error {
 	}
 
 	// Create new history entry
-	entry := Entry{Expression: input, Result: result}
+	entry := Entry{Expression: input, Result: JsonFloat(result)}
 
 	// Append new entry to existing history
 	history = append(history, entry)

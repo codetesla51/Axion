@@ -128,26 +128,21 @@ func main() {
 
 		// Default case: treat input as mathematical expression
 		default:
-			// Stage 1: Tokenization - convert input string to token sequence
 			tokens, err := tokenizer.Tokenize(input)
 			if err != nil {
 				fmt.Println("Error:", err)
 				continue
 			}
 			
-			// Stage 2: Parsing - construct AST from tokens with proper precedence
 			p := parser.Parser{Tokens: tokens}
 			ast := p.ParseExpression()
 
-			// Stage 3: Evaluation - traverse AST and compute result
 			result, err := evaluator.Eval(ast)
 			if err != nil {
 				fmt.Println("Error:", err)
 				continue
 			}
 			
-			// Stage 4: Result formatting and display
-			// Handle special floating-point values
 			if math.IsNaN(result) {
 				fmt.Println("Result: undefined (NaN)")
 			} else if math.IsInf(result, 1) {
@@ -155,14 +150,11 @@ func main() {
 			} else if math.IsInf(result, -1) {
 				fmt.Println("Result: -∞")
 			} else {
-				// Use %g format for automatic precision and scientific notation
 				fmt.Printf("Result: %g\n", result)
 			}
 
-			// Stage 5: History persistence - save calculation for future reference
 			err = history.AddHistory(input, result)
 			if err != nil {
-				// History failure is non-critical, continue operation
 				fmt.Println("Failed to save history:", err)
 			}
 		}
