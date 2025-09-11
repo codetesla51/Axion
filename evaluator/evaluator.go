@@ -37,6 +37,9 @@ func factorial(n float64) (float64, error) {
 	}
 
 	// Prevent overflow: 170! is approximately 7.26e+306, 171! exceeds float64 maximum
+	if n > 170 {
+		return 0, fmt.Errorf("factorial too large: %g! exceeds maximum representable value (limit: 170!)", n)
+	}
 
 	// Compute factorial through iterative multiplication
 	result := 1.0
