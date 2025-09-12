@@ -1,26 +1,5 @@
-/*
-Parser Module - Recursive Descent Parser
-=========================================
-
-This module implements a recursive descent parser for mathematical expressions.
-It constructs an Abstract Syntax Tree (AST) from the token sequence produced
-by the tokenizer, ensuring proper operator precedence and associativity.
-
-Operator Precedence (highest to lowest):
-1. Primary expressions (numbers, functions, parentheses)
-2. Postfix operators (factorial !)
-3. Exponentiation (^) - right associative
-4. Unary operators (+, -)
-5. Multiplication and division (*, /) - left associative
-6. Addition and subtraction (+, -) - left associative
-
-The parser uses recursive descent with each precedence level implemented
-as a separate function. Higher precedence operations are parsed by calling
-functions that handle lower-precedence levels.
-
-Right associativity for exponentiation means: 2^3^2 = 2^(3^2) = 512
-Left associativity for other operators means: 8/4/2 = (8/4)/2 = 1
-*/
+// File: parser/parser.go
+// Fixed version to handle FUNCTION tokens properly
 
 package parser
 
@@ -59,8 +38,6 @@ func (p *Parser) ParseExpression() *Node {
 	return p.parseAssignment()
 }
 
-// parseAddSub handles addition and subtraction (precedence level 1 - lowest)
-// Implements left associativity: a - b + c = ((a - b) + c)
 func (p *Parser) parseAssignment() *Node {
 	if p.pos+1 < len(p.Tokens) &&
 		p.Tokens[p.pos].Type == tokenizer.IDENT &&
@@ -69,99 +46,79 @@ func (p *Parser) parseAssignment() *Node {
 		varName := p.Tokens[p.pos].Value
 		p.pos += 2 // skip IDENT and ASSIGN
 
-		rightNode := p.parseAddSub() // still a Node
+		rightNode := p.parseAddSub()
 
 		return &Node{
 			Type:  NODE_ASSIGN,
-			Value: varName,   // store variable name in Value
-			Right: rightNode, // RHS of assignment
+			Value: varName,
+			Right: rightNode,
 		}
 	}
 
 	return p.parseAddSub()
 }
+
 func (p *Parser) parseAddSub() *Node {
-	// Parse left operand at higher precedence level
 	node := p.parseMulDiv()
 
-	// Continue parsing same-level operators with left associativity
 	for p.pos < len(p.Tokens) {
 		tok := p.Tokens[p.pos]
 		if tok.Type == tokenizer.OPERATOR && (tok.Value == "+" || tok.Value == "-") {
-			p.pos++                  // Consume operator token
-			right := p.parseMulDiv() // Parse right operand
-			// Create binary operator node with left associativity
+			p.pos++
+			right := p.parseMulDiv()
 			node = &Node{Type: NODE_OPERATOR, Value: tok.Value, Left: node, Right: right}
 		} else {
-			break // No more operators at this precedence level
+			break
 		}
 	}
 	return node
 }
 
-// parseMulDiv handles multiplication and division (precedence level 2)
-// Implements left associativity: a / b * c = ((a / b) * c)
 func (p *Parser) parseMulDiv() *Node {
-	// Parse left operand at higher precedence level
 	node := p.parseUnary()
 
-	// Continue parsing same-level operators with left associativity
 	for p.pos < len(p.Tokens) {
 		tok := p.Tokens[p.pos]
 		if tok.Type == tokenizer.OPERATOR && (tok.Value == "*" || tok.Value == "/") {
-			p.pos++                 // Consume operator token
-			right := p.parseUnary() // Parse right operand
-			// Create binary operator node with left associativity
+			p.pos++
+			right := p.parseUnary()
 			node = &Node{Type: NODE_OPERATOR, Value: tok.Value, Left: node, Right: right}
 		} else {
-			break // No more operators at this precedence level
+			break
 		}
 	}
 	return node
 }
 
-// parseUnary handles unary plus and minus operators (precedence level 3)
-// Unary operators have lower precedence than exponentiation:
-// -3^2 should parse as -(3^2) = -9, not (-3)^2 = 9
 func (p *Parser) parseUnary() *Node {
-	// Check for end of input
 	if p.pos >= len(p.Tokens) {
 		return nil
 	}
 
 	tok := p.Tokens[p.pos]
 	if tok.Type == tokenizer.OPERATOR && (tok.Value == "-" || tok.Value == "+") {
-		p.pos++ // Consume unary operator
-		// Parse operand at higher precedence (exponentiation comes first)
+		p.pos++
 		child := p.parseExponent()
 		if tok.Value == "-" {
-			// Create unary negation node
 			return &Node{
 				Type:  NODE_OPERATOR,
-				Value: "neg", // Internal representation for unary minus
+				Value: "neg",
 				Left:  child,
 			}
 		}
-		// Unary plus is effectively a no-op
 		return child
 	}
 
-	// No unary operator present, continue to higher precedence
 	return p.parseExponent()
 }
 
-// parseExponent handles exponentiation (precedence level 4)
-// Implements right associativity: 2^3^4 = 2^(3^4) = 2^81 = large number
 func (p *Parser) parseExponent() *Node {
-	// Parse base operand at higher precedence level
 	node := p.parsePostfix()
 
-	// Check for exponentiation operator
 	if p.pos < len(p.Tokens) {
 		tok := p.Tokens[p.pos]
 		if tok.Type == tokenizer.OPERATOR && tok.Value == "^" {
-			p.pos++ // Consume exponentiation operator
-			// Right associativity: parse exponent at same precedence level
+			p.pos++
 			right := p.parseUnary()
 			return &Node{Type: NODE_OPERATOR, Value: "^", Left: node, Right: right}
 		}
@@ -169,87 +126,108 @@ func (p *Parser) parseExponent() *Node {
 	return node
 }
 
-// parsePostfix handles postfix operators like factorial (precedence level 5)
-// Multiple factorials can be applied: 5!! = (5!)! = 120! (mathematically valid)
 func (p *Parser) parsePostfix() *Node {
-	// Parse primary expression first
 	node := p.parseFactor()
 
-	// Apply all consecutive postfix operators
 	for p.pos < len(p.Tokens) {
 		tok := p.Tokens[p.pos]
 		if tok.Type == tokenizer.FUNCTION && tok.Value == "!" {
-			p.pos++ // Consume factorial operator
-			// Wrap current node as argument to factorial function
+			p.pos++
 			node = &Node{
 				Type:     NODE_FUNCTION,
 				Value:    "!",
 				Children: []*Node{node},
 			}
 		} else {
-			break // No more postfix operators
+			break
 		}
 	}
 
 	return node
 }
 
-// parseFactor handles primary expressions (precedence level 6 - highest)
-// Primary expressions: numbers, function calls, parenthesized expressions
+// parseFactor handles primary expressions - FIXED VERSION
 func (p *Parser) parseFactor() *Node {
-    if p.pos >= len(p.Tokens) {
-        return nil
-    }
+	if p.pos >= len(p.Tokens) {
+		return nil
+	}
 
-    tok := p.Tokens[p.pos]
-    p.pos++ // consume current token
-    var node *Node
+	tok := p.Tokens[p.pos]
+	p.pos++ // consume current token
+	var node *Node
 
-    switch tok.Type {
-    case tokenizer.NUMBER:
-        node = &Node{Type: NODE_NUMBER, Value: tok.Value}
+	switch tok.Type {
+	case tokenizer.NUMBER:
+		node = &Node{Type: NODE_NUMBER, Value: tok.Value}
 
-    case tokenizer.IDENT:
-        // Check if next token is '(' → this is a function call
-        if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "(" {
-            p.pos++ // consume '('
-            var args []*Node
+	case tokenizer.IDENT:
+		// Check if next token is '(' → function call
+		if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "(" {
+			p.pos++ // consume '('
+			var args []*Node
 
-            if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value != ")" {
-                arg := p.ParseExpression()
-                args = append(args, arg)
-                for p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "," {
-                    p.pos++ // consume ','
-                    arg = p.ParseExpression()
-                    args = append(args, arg)
-                }
-            }
+			if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value != ")" {
+				arg := p.ParseExpression()
+				args = append(args, arg)
+				for p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "," {
+					p.pos++ // consume ','
+					arg = p.ParseExpression()
+					args = append(args, arg)
+				}
+			}
 
-            if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == ")" {
-                p.pos++ // consume ')'
-            }
+			if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == ")" {
+				p.pos++ // consume ')'
+			}
 
-            node = &Node{Type: NODE_FUNCTION, Value: tok.Value, Children: args}
-        } else {
-            // normal identifier/variable
-            node = &Node{Type: NODE_IDENTIFIER, Value: tok.Value}
-        }
+			node = &Node{Type: NODE_FUNCTION, Value: tok.Value, Children: args}
+		} else {
+			// normal identifier/variable
+			node = &Node{Type: NODE_IDENTIFIER, Value: tok.Value}
+		}
 
-    case tokenizer.FUNCTION:
-        // only factorial "!" handled here if you tokenize it separately
-        if tok.Value == "!" {
-            p.pos--
-            return nil
-        }
+	// FIXED: Handle FUNCTION tokens (like sin, cos, etc.)
+	case tokenizer.FUNCTION:
+		if tok.Value == "!" {
+			// Factorial is handled in postfix
+			p.pos--
+			return nil
+		} else {
+			// This is a function like sin, cos, etc.
+			// Check if next token is '(' → function call
+			if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "(" {
+				p.pos++ // consume '('
+				var args []*Node
 
-    case tokenizer.PAREN:
-        if tok.Value == "(" {
-            node = p.ParseExpression()
-            if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == ")" {
-                p.pos++
-            }
-        }
-    }
+				if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value != ")" {
+					arg := p.ParseExpression()
+					args = append(args, arg)
+					for p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "," {
+						p.pos++ // consume ','
+						arg = p.ParseExpression()
+						args = append(args, arg)
+					}
+				}
 
-    return node
+				if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == ")" {
+					p.pos++ // consume ')'
+				}
+
+				node = &Node{Type: NODE_FUNCTION, Value: tok.Value, Children: args}
+			} else {
+				// Function without parentheses - treat as identifier
+				node = &Node{Type: NODE_IDENTIFIER, Value: tok.Value}
+			}
+		}
+
+	case tokenizer.PAREN:
+		if tok.Value == "(" {
+			node = p.ParseExpression()
+			if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == ")" {
+				p.pos++
+			}
+		}
+	}
+
+	return node
 }

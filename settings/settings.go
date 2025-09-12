@@ -1,8 +1,8 @@
-  package settings
+package settings
 
 import "fmt"
 
-var Precision = 6 
+var Precision = 6
 
 func Set(p int) error {
 	if p < 0 || p > 20 {

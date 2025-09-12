@@ -19,6 +19,9 @@ Key implementation details:
 - Buffer management ensures complete token extraction
 */
 
+// File: tokenizer/tokenizer.go
+// Fixed version of your existing tokenizer
+
 package tokenizer
 
 import (
@@ -26,34 +29,33 @@ import (
 	"unicode"
 )
 
-// TokenType defines the categories of tokens recognized by the lexer
+// TokenType defines the categories of tokens
 type TokenType int
 
 const (
-	NUMBER   TokenType = iota // Numeric literals: 42, 3.14, 1.5e-10
-	OPERATOR                  // Mathematical operators: +, -, *, /, ^
-	PAREN                     // Parentheses: (, )
-	FUNCTION                  // Function identifiers: sin, cos, tan, log, sqrt, !
-	IDENT
-	ASSIGN
+	NUMBER   TokenType = iota // 0
+	OPERATOR                  // 1
+	PAREN                     // 2
+	FUNCTION                  // 3
+	IDENT                     // 4
+	ASSIGN                    // 5
 )
 
-// Token represents a lexical unit with its classification and value
+// Token represents a lexical unit
 type Token struct {
-	Type  TokenType // Token classification
-	Value string    // Literal token content
+	Type  TokenType
+	Value string
 }
 
 // Tokenize performs lexical analysis on the input expression
-// Returns a sequence of tokens or an error for invalid input
 func Tokenize(input string) ([]Token, error) {
-	var tokens []Token      // Accumulated token sequence
-	var numberBuffer string // Buffer for constructing numeric tokens
-	var wordBuffer string   // Buffer for constructing function name tokens
+	var tokens []Token
+	var numberBuffer string
+	var wordBuffer string
 
-	// addToken handles token insertion with implicit multiplication logic
+	// Helper function to add tokens with implicit multiplication
 	addToken := func(t Token) {
-		// Insert implicit multiplication operators where mathematically appropriate
+		// Insert implicit multiplication operators where needed
 		if len(tokens) > 0 {
 			last := tokens[len(tokens)-1]
 
@@ -61,45 +63,39 @@ func Tokenize(input string) ([]Token, error) {
 			if t.Type == FUNCTION && t.Value == "!" {
 				// No implicit multiplication before factorial
 			} else if (last.Type == NUMBER || (last.Type == PAREN && last.Value == ")")) &&
-				(t.Type == NUMBER || t.Type == FUNCTION || (t.Type == PAREN && t.Value == "(")) {
-				// Insert multiplication between:
-				// NUMBER + NUMBER: "2 3" -> "2 * 3"
-				// NUMBER + FUNCTION: "2sin" -> "2 * sin"
-				// NUMBER + OPEN_PAREN: "2(" -> "2 * ("
-				// CLOSE_PAREN + NUMBER: ")3" -> ") * 3"
-				// CLOSE_PAREN + FUNCTION: ")sin" -> ") * sin"
-				// CLOSE_PAREN + OPEN_PAREN: ")(" -> ") * ("
+				(t.Type == NUMBER || t.Type == FUNCTION || t.Type == IDENT || (t.Type == PAREN && t.Value == "(")) {
+				// Insert multiplication between appropriate tokens
 				tokens = append(tokens, Token{Type: OPERATOR, Value: "*"})
 			}
 		}
 		tokens = append(tokens, t)
 	}
 
-	// Character-by-character lexical analysis
+	// Character-by-character processing
 	for i := 0; i < len(input); i++ {
 		ch := rune(input[i])
 
 		switch {
-		// Process numeric characters and decimal points
+		// Handle digits and decimal points
 		case unicode.IsDigit(ch) || ch == '.':
-			// Validate decimal point usage - only one per numeric literal
+			// Validate decimal point usage
 			if ch == '.' && containsDot(numberBuffer) {
-				return nil, fmt.Errorf("invalid number: multiple decimals in %q", numberBuffer+string(ch))
+				return nil, fmt.Errorf("invalid number: multiple decimal points in %q", numberBuffer+string(ch))
 			}
 			numberBuffer += string(ch)
 
-			// Handle scientific notation (exponential form)
+			// Handle scientific notation
 			if i+1 < len(input) && (input[i+1] == 'e' || input[i+1] == 'E') {
 				i++
 				numberBuffer += string(input[i])
 
-				// Process optional sign in exponent
+				// Handle optional sign
 				if i+1 < len(input) && (input[i+1] == '+' || input[i+1] == '-') {
 					i++
 					numberBuffer += string(input[i])
 				}
 
-				// Require digits in exponent
+				// Require digits after exponent
 				digitsFound := false
 				for i+1 < len(input) && unicode.IsDigit(rune(input[i+1])) {
 					i++
@@ -107,85 +103,114 @@ func Tokenize(input string) ([]Token, error) {
 					digitsFound = true
 				}
 
-				// Validate complete exponent format
 				if !digitsFound {
-					return nil, fmt.Errorf("invalid exponent in number: %q", numberBuffer)
+					return nil, fmt.Errorf("invalid scientific notation in %q", numberBuffer)
 				}
 			}
 
-		// Process alphabetic characters (function names)
+		// Handle alphabetic characters (functions and identifiers)
 		case unicode.IsLetter(ch):
-			wordBuffer := string(ch)
-			i++
-			for i < len(input) && (unicode.IsLetter(rune(input[i])) || unicode.IsDigit(rune(input[i]))) {
-				wordBuffer += string(input[i])
-				i++
-			}
-			tokens = append(tokens, Token{Type: IDENT, Value: wordBuffer})
-		// Process mathematical operators
+			wordBuffer += string(ch)
+
+		// Handle mathematical operators
 		case ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '^':
-			// Flush accumulated buffers before processing operator
+			// Flush buffers
 			if numberBuffer != "" {
 				addToken(Token{Type: NUMBER, Value: numberBuffer})
 				numberBuffer = ""
 			}
 			if wordBuffer != "" {
-				addToken(Token{Type: FUNCTION, Value: wordBuffer})
+				if isMathFunction(wordBuffer) {
+					addToken(Token{Type: FUNCTION, Value: wordBuffer})
+				} else {
+					addToken(Token{Type: IDENT, Value: wordBuffer})
+				}
 				wordBuffer = ""
 			}
 			addToken(Token{Type: OPERATOR, Value: string(ch)})
+
+		// Handle assignment operator
 		case ch == '=':
-			tokens = append(tokens, Token{Type: ASSIGN, Value: "="})
-		// Process parentheses
-		case ch == '(' || ch == ')':
-			// Flush accumulated buffers before processing parenthesis
+			// Flush buffers
 			if numberBuffer != "" {
 				addToken(Token{Type: NUMBER, Value: numberBuffer})
 				numberBuffer = ""
 			}
 			if wordBuffer != "" {
-				addToken(Token{Type: FUNCTION, Value: wordBuffer})
+				if isMathFunction(wordBuffer) {
+					addToken(Token{Type: FUNCTION, Value: wordBuffer})
+				} else {
+					addToken(Token{Type: IDENT, Value: wordBuffer})
+				}
+				wordBuffer = ""
+			}
+			addToken(Token{Type: ASSIGN, Value: "="})
+
+		// Handle parentheses
+		case ch == '(' || ch == ')':
+			// Flush buffers
+			if numberBuffer != "" {
+				addToken(Token{Type: NUMBER, Value: numberBuffer})
+				numberBuffer = ""
+			}
+			if wordBuffer != "" {
+				if isMathFunction(wordBuffer) {
+					addToken(Token{Type: FUNCTION, Value: wordBuffer})
+				} else {
+					addToken(Token{Type: IDENT, Value: wordBuffer})
+				}
 				wordBuffer = ""
 			}
 			addToken(Token{Type: PAREN, Value: string(ch)})
 
-		// Process factorial operator
+		// Handle factorial
 		case ch == '!':
-			// Flush accumulated buffers before processing factorial
+			// Flush buffers
 			if numberBuffer != "" {
 				addToken(Token{Type: NUMBER, Value: numberBuffer})
 				numberBuffer = ""
 			}
 			if wordBuffer != "" {
-				addToken(Token{Type: FUNCTION, Value: wordBuffer})
+				if isMathFunction(wordBuffer) {
+					addToken(Token{Type: FUNCTION, Value: wordBuffer})
+				} else {
+					addToken(Token{Type: IDENT, Value: wordBuffer})
+				}
 				wordBuffer = ""
 			}
 			addToken(Token{Type: FUNCTION, Value: "!"})
 
-		// Process whitespace (token separator, not preserved)
+		// Handle whitespace
 		case unicode.IsSpace(ch):
-			// Flush buffers on whitespace but do not create whitespace tokens
+			// Flush buffers on whitespace
 			if numberBuffer != "" {
 				addToken(Token{Type: NUMBER, Value: numberBuffer})
 				numberBuffer = ""
 			}
 			if wordBuffer != "" {
-				addToken(Token{Type: FUNCTION, Value: wordBuffer})
+				if isMathFunction(wordBuffer) {
+					addToken(Token{Type: FUNCTION, Value: wordBuffer})
+				} else {
+					addToken(Token{Type: IDENT, Value: wordBuffer})
+				}
 				wordBuffer = ""
 			}
 
-		// Process comma (function argument separator)
+		// Handle comma (function argument separator)
 		case ch == ',':
-			// Flush accumulated buffers before processing comma
+			// Flush buffers
 			if numberBuffer != "" {
 				addToken(Token{Type: NUMBER, Value: numberBuffer})
 				numberBuffer = ""
 			}
 			if wordBuffer != "" {
-				addToken(Token{Type: FUNCTION, Value: wordBuffer})
+				if isMathFunction(wordBuffer) {
+					addToken(Token{Type: FUNCTION, Value: wordBuffer})
+				} else {
+					addToken(Token{Type: IDENT, Value: wordBuffer})
+				}
 				wordBuffer = ""
 			}
-			// Treat comma as operator for parsing purposes
 			addToken(Token{Type: OPERATOR, Value: ","})
 
 		// Handle invalid characters
@@ -199,14 +224,17 @@ func Tokenize(input string) ([]Token, error) {
 		addToken(Token{Type: NUMBER, Value: numberBuffer})
 	}
 	if wordBuffer != "" {
-		addToken(Token{Type: FUNCTION, Value: wordBuffer})
+		if isMathFunction(wordBuffer) {
+			addToken(Token{Type: FUNCTION, Value: wordBuffer})
+		} else {
+			addToken(Token{Type: IDENT, Value: wordBuffer})
+		}
 	}
 
 	return tokens, nil
 }
 
-// containsDot checks for existing decimal point in numeric buffer
-// Used to validate numeric literal format during tokenization
+// containsDot checks for decimal point in number buffer
 func containsDot(s string) bool {
 	for _, ch := range s {
 		if ch == '.' {
@@ -214,4 +242,18 @@ func containsDot(s string) bool {
 		}
 	}
 	return false
+}
+
+// isMathFunction checks if a word is a mathematical function
+func isMathFunction(word string) bool {
+	functions := map[string]bool{
+		"sin": true, "cos": true, "tan": true,
+		"asin": true, "acos": true, "atan": true,
+		"sqrt": true, "exp": true, "abs": true,
+		"ceil": true, "floor": true, "log": true,
+		"log10": true, "pow": true, "max": true,
+		"min": true, "mean": true, "median": true,
+		"mode": true,
+	}
+	return functions[word]
 }
