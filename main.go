@@ -5,24 +5,27 @@ Author: Uthman
 Year: 2025
 
 This file implements the main command-line interface for the Axion calculator.
-It provides a REPL (Read-Eval-Print-Loop) that processes user input and delegates
-to appropriate modules for mathematical expression evaluation, unit conversion,
-and history management.
+It provides a comprehensive REPL (Read-Eval-Print-Loop) that processes user input
+and delegates to appropriate modules for mathematical expression evaluation, unit
+conversion, variable management, and history operations.
 
 The expression evaluation pipeline follows this sequence:
 1. Input string -> Tokenizer (lexical analysis)
 2. Tokens -> Parser (syntax analysis, AST construction)
-3. AST -> Evaluator (expression evaluation)
+3. AST -> Evaluator (expression evaluation with variable support)
 4. Result -> History storage and display
 
-Supported commands:
-- Mathematical expressions: evaluated through the tokenizer->parser->evaluator pipeline
-- Unit conversions: handled by the units module
-- History display: managed by the history module
-- Help and exit commands
+Supported command categories:
+- Mathematical expressions: Full expression evaluation with variables and functions
+- Variable operations: Assignment, retrieval, and management
+- Unit conversions: Multi-category conversion system
+- History management: Persistent calculation storage and retrieval
+- Settings: Precision control and display customization
+- System commands: Help, clear screen, and exit functionality
 
 Error handling is implemented at each stage to provide meaningful feedback
-for invalid input, mathematical errors, and system failures.
+for invalid input, mathematical errors, domain violations, and system failures.
+The REPL maintains session state including variables and settings.
 */
 
 package main
@@ -34,7 +37,6 @@ import (
 	"Axion/parser"
 	"Axion/settings"
 	"Axion/tokenizer"
-
 	"Axion/units"
 	"bufio"
 	"fmt"
@@ -44,92 +46,172 @@ import (
 	"strings"
 )
 
-// printHelp displays available commands and usage examples to the user
+// printHelp displays comprehensive command reference and usage examples
 func printHelp() {
 	fmt.Println("Axion CLI Calculator")
-	fmt.Println("--------------------")
-	fmt.Println("Commands:")
-	fmt.Println("  <expression>           Evaluate a math expression")
-	fmt.Println("  convert <v> <from> to <to>   Convert units (e.g. convert 10 km to m)")
-	fmt.Println("  history                Show calculation history")
-	fmt.Println("  exit                   Exit the program")
-	fmt.Println("  help                   Show this help message")
+	fmt.Println("====================")
+	fmt.Println()
+
+	fmt.Println("BASIC COMMANDS")
+	fmt.Println("--------------")
+	fmt.Printf("  %-20s %s\n", "<expression>", "Evaluate mathematical expression")
+	fmt.Printf("  %-20s %s\n", "help", "Show this help message")
+	fmt.Printf("  %-20s %s\n", "exit", "Exit the calculator")
+	fmt.Printf("  %-20s %s\n", "clear", "Clear terminal screen")
+	fmt.Printf("  %-20s %s\n", "variables", "Show all stored variables")
+	fmt.Printf("  %-20s %s\n", "history", "Display calculation history")
+	fmt.Println()
+
+	fmt.Println("MATHEMATICAL FUNCTIONS")
+	fmt.Println("----------------------")
+	fmt.Printf("  %-20s %s\n", "Trigonometric:", "sin, cos, tan, asin, acos, atan")
+	fmt.Printf("  %-20s %s\n", "Logarithmic:", "ln, log, log10, log2")
+	fmt.Printf("  %-20s %s\n", "Exponential:", "exp, pow, sqrt")
+	fmt.Printf("  %-20s %s\n", "Utility:", "abs, ceil, floor, round, sign")
+	fmt.Printf("  %-20s %s\n", "Statistical:", "mean, median, mode, sum, product")
+	fmt.Printf("  %-20s %s\n", "Other:", "max, min, mod, ! (factorial)")
+	fmt.Println()
+
+	fmt.Println("VARIABLES & CONSTANTS")
+	fmt.Println("---------------------")
+	fmt.Printf("  %-20s %s\n", "Assignment:", "x = 5, area = pi * r^2")
+	fmt.Printf("  %-20s %s\n", "Constants:", "pi, e, phi, c, G, h")
+	fmt.Println()
+
+	fmt.Println("UNIT CONVERSION")
+	fmt.Println("---------------")
+	fmt.Printf("  %-20s %s\n", "Syntax:", "convert <value> <from> to <to>")
+	fmt.Printf("  %-20s %s\n", "Length:", "m, cm, mm, km, in, ft, yd, mi")
+	fmt.Printf("  %-20s %s\n", "Weight:", "kg, g, mg, lb, oz, ton")
+	fmt.Printf("  %-20s %s\n", "Time:", "s, ms, min, h, d")
+	fmt.Printf("  %-20s %s\n", "Example:", "convert 100 cm to m")
+	fmt.Println()
+
+	fmt.Println("SETTINGS")
+	fmt.Println("--------")
+	fmt.Printf("  %-20s %s\n", "precision <n>", "Set decimal precision (0-20)")
+	fmt.Println()
+
+	fmt.Println("EXAMPLES")
+	fmt.Println("--------")
+	fmt.Printf("  %-20s %s\n", "Basic:", "2 + 3 * 4, (10 - 5) / 2")
+	fmt.Printf("  %-20s %s\n", "Functions:", "sin(30), sqrt(16), log(100)")
+	fmt.Printf("  %-20s %s\n", "Variables:", "x = 10, y = x * 2")
+	fmt.Printf("  %-20s %s\n", "Scientific:", "2e-10, 3.14E+5")
+	fmt.Printf("  %-20s %s\n", "Statistics:", "mean(1,2,3,4,5)")
 	fmt.Println()
 }
+
+// clearScreen clears the terminal display
 func clearScreen() {
 	fmt.Print("\033[H\033[2J")
 }
 
-func main() {
-	// Initialize scanner for reading from standard input
-	err := constants.Load("constants.json")
-	if err != nil {
-		fmt.Println("Failed to load constants:", err)
+// formatResult formats numerical results with proper precision
+func formatResult(result float64) string {
+	if math.IsNaN(result) {
+		return "undefined (NaN)"
+	} else if math.IsInf(result, 1) {
+		return "+∞"
+	} else if math.IsInf(result, -1) {
+		return "-∞"
+	} else {
+		format := fmt.Sprintf("%%.%dg", settings.Precision)
+		return fmt.Sprintf(format, result)
+	}
+}
+
+// showVariables displays all currently stored variables
+func showVariables() {
+	if len(evaluator.Vars) == 0 {
+		fmt.Println("No variables defined.")
 		return
 	}
+
+	fmt.Println("Stored Variables:")
+	fmt.Println("-----------------")
+	for name, value := range evaluator.Vars {
+		fmt.Printf("  %-10s = %s\n", name, formatResult(value))
+	}
+	fmt.Println()
+}
+
+func main() {
+	// Initialize constants system
+	err := constants.Load("constants.json")
+	if err != nil {
+		fmt.Printf("Warning: Failed to load constants: %v\n", err)
+	}
+
+	// Initialize input scanner
 	scanner := bufio.NewScanner(os.Stdin)
 
+	// Display welcome message
 	fmt.Println("Welcome to Axion Calculator! Type 'help' for commands.")
 
-	// Main REPL loop - continues until user exits or EOF
+	// Main REPL loop
 	for {
 		fmt.Print(">> ")
 
-		// Read next line of input
 		if !scanner.Scan() {
-			// EOF reached (Ctrl+D on Unix, Ctrl+Z on Windows)
+			fmt.Println("\nGoodbye!")
 			break
 		}
 
-		// Clean input by removing leading and trailing whitespace
 		input := strings.TrimSpace(scanner.Text())
 
-		// Skip processing empty lines
 		if input == "" {
 			continue
 		}
 
-		// Process input based on command type
 		switch {
-
-		case input == "exit":
+		case input == "exit" || input == "quit":
 			fmt.Println("Goodbye!")
 			return
-		case input == "cls" || input == "clear":
+
+		case input == "clear" || input == "cls":
 			clearScreen()
-		case input == "variables":
-			for k, v := range evaluator.Vars {
-				fmt.Printf("%s = %g\n", k, v)
-			}
+			fmt.Println("Welcome to Axion Calculator! Type 'help' for commands.")
 			continue
+
 		case input == "help":
 			printHelp()
 			continue
 
-		case input == "history":
-			history.ShowHistory()
-			continue
-		case strings.HasPrefix(input, "precision"):
-			parts := strings.Fields(input)
-			if len(parts) != 2 {
-				fmt.Println("Usage: precision <number of decimals>")
-				continue
-			}
-			p, err := strconv.Atoi(parts[1])
-			if err != nil {
-				fmt.Println("Invalid number:", err)
-				continue
-			}
-			if err := settings.Set(p); err != nil {
-				fmt.Println(err)
-				continue
-			}
-			fmt.Printf("Precision set to %d decimals\n", settings.Precision)
+		case input == "variables" || input == "vars":
+			showVariables()
 			continue
 
-		// Handle unit conversion commands with format: "convert <value> <from> to <to>"
+		case input == "history":
+			err := history.ShowHistory()
+			if err != nil {
+				fmt.Printf("Error displaying history: %v\n", err)
+			}
+			continue
+
+		case strings.HasPrefix(input, "precision "):
+			parts := strings.Fields(input)
+			if len(parts) != 2 {
+				fmt.Println("Usage: precision <number>")
+				fmt.Println("Example: precision 10")
+				continue
+			}
+
+			precision, err := strconv.Atoi(parts[1])
+			if err != nil {
+				fmt.Printf("Invalid number: %s\n", parts[1])
+				continue
+			}
+
+			if err := settings.Set(precision); err != nil {
+				fmt.Printf("Error: %v\n", err)
+				continue
+			}
+
+			fmt.Printf("Precision set to %d decimal places\n", settings.Precision)
+			continue
+
 		case strings.HasPrefix(input, "convert "):
-			// Parse conversion command into components
 			parts := strings.Fields(input)
 			if len(parts) != 5 || parts[3] != "to" {
 				fmt.Println("Usage: convert <value> <from> to <to>")
@@ -137,60 +219,58 @@ func main() {
 				continue
 			}
 
-			// Extract conversion parameters
 			valueStr := parts[1]
-			from := parts[2]
-			to := parts[4]
+			fromUnit := parts[2]
+			toUnit := parts[4]
 
-			// Parse numeric value from string
 			var value float64
 			_, err := fmt.Sscanf(valueStr, "%f", &value)
 			if err != nil {
-				fmt.Println("Invalid number:", valueStr)
+				fmt.Printf("Invalid number: %s\n", valueStr)
 				continue
 			}
 
-			// Perform unit conversion
-			result, err := units.Convert(value, from, to)
+			result, err := units.Convert(value, fromUnit, toUnit)
 			if err != nil {
-				fmt.Println("Conversion error:", err)
+				fmt.Printf("Conversion error: %v\n", err)
 				continue
 			}
 
-			// Display conversion result
-			fmt.Printf("%g %s = %g %s\n", value, from, result, to)
+			fmt.Printf("%s %s = %s %s\n",
+				formatResult(value), fromUnit,
+				formatResult(result), toUnit)
 			continue
 
-		// Default case: treat input as mathematical expression
 		default:
+			// Mathematical expression evaluation
 			tokens, err := tokenizer.Tokenize(input)
 			if err != nil {
-				fmt.Println("Error:", err)
+				fmt.Printf("Error: %v\n", err)
 				continue
 			}
 
 			p := parser.Parser{Tokens: tokens}
 			ast := p.ParseExpression()
-			result, err := evaluator.Eval(ast)
-			if err != nil {
-				fmt.Println("Error:", err)
+			if ast == nil {
+				fmt.Println("Error: Invalid expression")
 				continue
 			}
 
-			if math.IsNaN(result) {
-				fmt.Println("Result: undefined (NaN)")
-			} else if math.IsInf(result, 1) {
-				fmt.Println("Result: +∞")
-			} else if math.IsInf(result, -1) {
-				fmt.Println("Result: -∞")
-			} else {
-				fmt.Printf("Result: %g\n", result)
+			result, err := evaluator.Eval(ast)
+			if err != nil {
+				fmt.Printf("Error: %v\n", err)
+				continue
 			}
 
-			err = history.AddHistory(input, result)
-			if err != nil {
-				fmt.Println("Failed to save history:", err)
+			fmt.Printf("Result: %s\n", formatResult(result))
+
+			if err := history.AddHistory(input, result); err != nil {
+				fmt.Printf("Warning: Failed to save to history: %v\n", err)
 			}
 		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Printf("Input error: %v\n", err)
 	}
 }

@@ -1,26 +1,41 @@
 /*
-Tokenizer Module - Lexical Analysis
-====================================
+Tokenizer Module - Lexical Analysis Engine
+===========================================
+Part of Axion CLI Calculator
+Author: Uthman
+Year: 2025
 
-This module implements lexical analysis for mathematical expressions, converting
-input strings into sequences of tokens that can be processed by the parser.
+This module implements comprehensive lexical analysis for mathematical expressions,
+transforming input strings into structured token sequences for parser consumption.
+The tokenizer serves as the first stage in the expression evaluation pipeline.
 
-The tokenizer handles:
-- Numeric literals including scientific notation (1.5e-10)
-- Mathematical operators (+, -, *, /, ^)
-- Function names (sin, cos, log, etc.)
-- Parentheses for grouping
-- Implicit multiplication insertion (2sin(x) -> 2 * sin(x))
+Core Capabilities:
+- Numeric literal parsing with full scientific notation support (1.5e-10, 2E+5)
+- Mathematical operator recognition (+, -, *, /, ^, !, =)
+- Function name identification and classification
+- Parentheses and comma handling for grouping and function arguments
+- Intelligent implicit multiplication insertion (2sin(x) → 2 * sin(x))
+- Variable and identifier recognition
+- Assignment operator support
 
-Key implementation details:
-- Scientific notation is parsed as single tokens to maintain numeric integrity
-- Implicit multiplication is inserted between adjacent operands
-- Decimal validation prevents malformed numbers (3.14.15)
-- Buffer management ensures complete token extraction
+Key Features:
+- Scientific Notation: Complete support for exponential format including optional signs
+- Input Validation: Prevents malformed numbers (e.g., 3.14.15) and invalid characters
+- Implicit Multiplication: Automatically inserts multiplication between adjacent operands
+- Buffer Management: Ensures complete token extraction with proper boundary handling
+- Error Reporting: Provides detailed error messages with context for invalid input
+
+Token Categories:
+- NUMBER: Numeric literals including decimals and scientific notation
+- OPERATOR: Mathematical operators and separators
+- FUNCTION: Built-in mathematical functions (sin, cos, log, etc.)
+- IDENT: User-defined variables and identifiers
+- PAREN: Grouping operators for precedence control
+- ASSIGN: Variable assignment operator
+
+The tokenizer maintains mathematical expression integrity while providing
+flexibility for complex calculations and function compositions.
 */
-
-// File: tokenizer/tokenizer.go
-// Fixed version of your existing tokenizer
 
 package tokenizer
 

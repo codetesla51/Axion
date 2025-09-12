@@ -1,6 +1,53 @@
-// File: parser/parser.go
-// Fixed version to handle FUNCTION tokens properly
+/*
+Parser Module - Syntax Analysis and AST Construction
+====================================================
+Part of Axion CLI Calculator
+Author: Uthman
+Year: 2025
 
+This module implements recursive descent parsing for mathematical expressions,
+converting token sequences from the tokenizer into Abstract Syntax Trees (AST)
+ready for evaluation. The parser enforces proper mathematical operator precedence
+and handles complex nested expressions.
+
+Architecture:
+The parser uses recursive descent methodology with precedence climbing to
+ensure correct mathematical evaluation order. Each precedence level is
+handled by dedicated parsing functions that build appropriate AST structures.
+
+Precedence Hierarchy (lowest to highest):
+1. Assignment operators (=)
+2. Addition and subtraction (+, -)
+3. Multiplication and division (*, /)
+4. Unary operators (-, +)
+5. Exponentiation (^) - right associative
+6. Postfix operators (factorial !)
+7. Primary expressions (numbers, functions, parentheses)
+
+AST Node Types:
+- NODE_NUMBER: Terminal nodes containing numeric literals
+- NODE_OPERATOR: Binary and unary operation nodes
+- NODE_FUNCTION: Function calls with argument lists
+- NODE_ASSIGN: Variable assignment operations
+- NODE_IDENTIFIER: Variable and constant references
+
+Key Features:
+- Operator Precedence: Ensures mathematical correctness (2 + 3 * 4 = 14, not 20)
+- Right Associativity: Proper handling of exponentiation (2^3^2 = 2^(3^2) = 512)
+- Function Parsing: Multi-argument function support with comma separation
+- Assignment Support: Variable assignment with proper precedence
+- Error Recovery: Graceful handling of malformed expressions
+- Memory Efficiency: Minimal AST node allocation
+
+Expression Examples:
+- "2 + 3 * 4" → AST with multiplication evaluated before addition
+- "sin(30) + cos(60)" → Function calls with numeric arguments
+- "x = 5 + 3" → Assignment node with expression evaluation
+- "2^3^2" → Right-associative exponentiation chain
+
+The parser bridges the gap between lexical tokens and evaluable expressions,
+ensuring mathematical correctness throughout the parsing process.
+*/
 package parser
 
 import (
@@ -146,7 +193,7 @@ func (p *Parser) parsePostfix() *Node {
 	return node
 }
 
-// parseFactor handles primary expressions - FIXED VERSION
+// parseFactor handles primary expressions
 func (p *Parser) parseFactor() *Node {
 	if p.pos >= len(p.Tokens) {
 		return nil
@@ -186,15 +233,12 @@ func (p *Parser) parseFactor() *Node {
 			node = &Node{Type: NODE_IDENTIFIER, Value: tok.Value}
 		}
 
-	// FIXED: Handle FUNCTION tokens (like sin, cos, etc.)
 	case tokenizer.FUNCTION:
 		if tok.Value == "!" {
 			// Factorial is handled in postfix
 			p.pos--
 			return nil
 		} else {
-			// This is a function like sin, cos, etc.
-			// Check if next token is '(' → function call
 			if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "(" {
 				p.pos++ // consume '('
 				var args []*Node
