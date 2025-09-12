@@ -23,27 +23,23 @@ package evaluator
 
 import (
 	"Axion/parser"
+	"Axion/constants"
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 )
 
 var Vars = make(map[string]float64)
 
 // factorial computes the factorial function with overflow protection
-// Returns error for negative inputs, non-integers, or values exceeding IEEE 754 limits
 func factorial(n float64) (float64, error) {
-	// Validate input domain: non-negative integers only
 	if n < 0 || n != math.Floor(n) {
 		return 0, fmt.Errorf("factorial only defined for non-negative integers")
 	}
-
-	// Prevent overflow: 170! is approximately 7.26e+306, 171! exceeds float64 maximum
 	if n > 170 {
 		return 0, fmt.Errorf("factorial too large: %g! exceeds maximum representable value (limit: 170!)", n)
 	}
-
-	// Compute factorial through iterative multiplication
 	result := 1.0
 	for i := 2; i <= int(n); i++ {
 		result *= float64(i)
@@ -51,24 +47,20 @@ func factorial(n float64) (float64, error) {
 	return result, nil
 }
 
-// Eval performs recursive evaluation of the Abstract Syntax Tree
-// Returns the computed numeric result or an error for invalid operations
+// Eval recursively evaluates an AST node and returns its numeric value
 func Eval(node *parser.Node) (float64, error) {
-	// Validate node existence
 	if node == nil {
-		return 0, fmt.Errorf("Invalid")
+		return 0, fmt.Errorf("invalid node")
 	}
 
-	// Process node based on type classification
 	switch node.Type {
-
-	// Base case: numeric literals
 	case parser.NODE_NUMBER:
 		val, err := strconv.ParseFloat(node.Value, 64)
 		if err != nil {
 			return 0, fmt.Errorf("invalid number %q", node.Value)
 		}
 		return val, nil
+
 	case parser.NODE_ASSIGN:
 		val, err := Eval(node.Right)
 		if err != nil {
@@ -81,11 +73,13 @@ func Eval(node *parser.Node) (float64, error) {
 		if v, ok := Vars[node.Value]; ok {
 			return v, nil
 		}
-		return 0, fmt.Errorf("undefined variable %s", node.Value)
+		if v, ok := constants.Get(node.Value); ok {
+			return v, nil
+		}
+		return 0, fmt.Errorf("undefined variable or constant %s", node.Value)
 
 	case parser.NODE_OPERATOR:
-		// Handle unary negation operator
-		if node.Value == "neg" {
+		if node.Value == "neg" { // unary negation
 			left, err := Eval(node.Left)
 			if err != nil {
 				return 0, err
@@ -93,7 +87,6 @@ func Eval(node *parser.Node) (float64, error) {
 			return -left, nil
 		}
 
-		// Handle binary operators: evaluate both operands
 		left, err := Eval(node.Left)
 		if err != nil {
 			return 0, err
@@ -103,7 +96,6 @@ func Eval(node *parser.Node) (float64, error) {
 			return 0, err
 		}
 
-		// Apply binary operation
 		switch node.Value {
 		case "+":
 			return left + right, nil
@@ -112,13 +104,11 @@ func Eval(node *parser.Node) (float64, error) {
 		case "*":
 			return left * right, nil
 		case "/":
-			// Guard against division by zero
 			if right == 0 {
 				return 0, fmt.Errorf("division by zero")
 			}
 			return left / right, nil
 		case "^":
-			// Exponentiation using standard library
 			if right > 500 {
 				return 0, fmt.Errorf("exponent too large: maximum allowed is 500")
 			}
@@ -127,129 +117,138 @@ func Eval(node *parser.Node) (float64, error) {
 			return 0, fmt.Errorf("unknown operator %q", node.Value)
 		}
 
-	// Recursive case: function calls
 	case parser.NODE_FUNCTION:
-		// Validate minimum argument count
-		if len(node.Children) < 1 {
-			return 0, fmt.Errorf("function %q requires at least 1 argument", node.Value)
-		}
-
-		// Evaluate first function argument
-		arg1, err := Eval(node.Children[0])
-		if err != nil {
-			return 0, err
-		}
-
-		// Dispatch function evaluation based on function name
 		switch node.Value {
 
-		// Trigonometric functions: input in degrees, internal computation in radians
-		case "sin", "cos", "tan":
-			radians := arg1 * math.Pi / 180
-			switch node.Value {
-			case "sin":
-				return math.Sin(radians), nil
-			case "cos":
-				return math.Cos(radians), nil
-			case "tan":
-				// Check for tangent asymptotes at odd multiples of 90 degrees
-				if math.Mod(arg1, 180) == 90 {
-					return 0, fmt.Errorf("tan(%g°): undefined (asymptote)", arg1)
-				}
-				return math.Tan(radians), nil
+		// Single-argument functions
+		case "sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "exp", "abs", "ceil", "floor", "!":
+			if len(node.Children) < 1 {
+				return 0, fmt.Errorf("%s requires 1 argument", node.Value)
 			}
-
-		// Inverse trigonometric functions: output in degrees
-		case "asin":
-			// Domain restriction: [-1, 1]
-			if arg1 < -1 || arg1 > 1 {
-				return 0, fmt.Errorf("asin: domain error - input must be between -1 and 1, got %g", arg1)
-			}
-			return math.Asin(arg1) * 180 / math.Pi, nil
-
-		case "acos":
-			// Domain restriction: [-1, 1]
-			if arg1 < -1 || arg1 > 1 {
-				return 0, fmt.Errorf("acos: domain error - input must be between -1 and 1, got %g", arg1)
-			}
-			return math.Acos(arg1) * 180 / math.Pi, nil
-
-		case "atan":
-			// No domain restrictions for arctangent
-			return math.Atan(arg1) * 180 / math.Pi, nil
-
-		// Logarithmic functions
-		case "ln":
-			// Natural logarithm: domain restriction to positive reals
-			if arg1 <= 0 {
-				return 0, fmt.Errorf("log: domain error - logarithm undefined for non-positive numbers, got %g", arg1)
-			}
-			return math.Log(arg1), nil
-
-		case "log":
-			// Base-10 logarithm: domain restriction to positive reals
-			if arg1 <= 0 {
-				return 0, fmt.Errorf("log10: domain error - logarithm undefined for non-positive numbers, got %g", arg1)
-			}
-			return math.Log10(arg1), nil
-
-		// Other single-argument functions
-		case "sqrt":
-			// Square root: domain restriction to non-negative reals
-			if arg1 < 0 {
-				return 0, fmt.Errorf("sqrt: domain error - cannot take square root of negative number, got %g", arg1)
-			}
-			return math.Sqrt(arg1), nil
-
-		case "exp":
-			// Exponential function: overflow protection
-			if arg1 > 709 {
-				return 0, fmt.Errorf("exp: overflow error - exp(%g) would exceed maximum representable value", arg1)
-			}
-			return math.Exp(arg1), nil
-
-		// Utility functions without domain restrictions
-		case "abs":
-			return math.Abs(arg1), nil
-		case "ceil":
-			return math.Ceil(arg1), nil
-		case "floor":
-			return math.Floor(arg1), nil
-
-		// Factorial function (postfix notation)
-		case "!":
-			val, err := factorial(arg1)
+			arg1, err := Eval(node.Children[0])
 			if err != nil {
 				return 0, err
 			}
-			return val, nil
+			switch node.Value {
+			case "sin":
+				return math.Sin(arg1 * math.Pi / 180), nil
+			case "cos":
+				return math.Cos(arg1 * math.Pi / 180), nil
+			case "tan":
+				if math.Mod(arg1, 180) == 90 {
+					return 0, fmt.Errorf("tan(%g°): undefined (asymptote)", arg1)
+				}
+				return math.Tan(arg1 * math.Pi / 180), nil
+			case "asin":
+				if arg1 < -1 || arg1 > 1 {
+					return 0, fmt.Errorf("asin: domain error, input must be [-1,1]")
+				}
+				return math.Asin(arg1) * 180 / math.Pi, nil
+			case "acos":
+				if arg1 < -1 || arg1 > 1 {
+					return 0, fmt.Errorf("acos: domain error, input must be [-1,1]")
+				}
+				return math.Acos(arg1) * 180 / math.Pi, nil
+			case "atan":
+				return math.Atan(arg1) * 180 / math.Pi, nil
+			case "sqrt":
+				if arg1 < 0 {
+					return 0, fmt.Errorf("sqrt: negative number %g", arg1)
+				}
+				return math.Sqrt(arg1), nil
+			case "exp":
+				if arg1 > 709 {
+					return 0, fmt.Errorf("exp overflow: %g", arg1)
+				}
+				return math.Exp(arg1), nil
+			case "abs":
+				return math.Abs(arg1), nil
+			case "ceil":
+				return math.Ceil(arg1), nil
+			case "floor":
+				return math.Floor(arg1), nil
+			case "!":
+				return factorial(arg1)
+			}
+
+		// Multi-argument functions
+		case "mean":
+			if len(node.Children) < 1 {
+				return 0, fmt.Errorf("mean requires at least 1 argument")
+			}
+			sum := 0.0
+			for _, child := range node.Children {
+				val, err := Eval(child)
+				if err != nil {
+					return 0, err
+				}
+				sum += val
+			}
+			return sum / float64(len(node.Children)), nil
+
+		case "median":
+			if len(node.Children) < 1 {
+				return 0, fmt.Errorf("median requires at least 1 argument")
+			}
+			vals := make([]float64, len(node.Children))
+			for i, child := range node.Children {
+				val, err := Eval(child)
+				if err != nil {
+					return 0, err
+				}
+				vals[i] = val
+			}
+			sort.Float64s(vals)
+			n := len(vals)
+			if n%2 == 1 {
+				return vals[n/2], nil
+			}
+			return (vals[n/2-1] + vals[n/2]) / 2, nil
+
+		case "mode":
+			if len(node.Children) < 1 {
+				return 0, fmt.Errorf("mode requires at least 1 argument")
+			}
+			freq := make(map[float64]int)
+			maxCount := 0
+			var mode float64
+			for _, child := range node.Children {
+				val, err := Eval(child)
+				if err != nil {
+					return 0, err
+				}
+				freq[val]++
+				if freq[val] > maxCount {
+					maxCount = freq[val]
+					mode = val
+				}
+			}
+			return mode, nil
 
 		// Two-argument functions
 		case "pow", "max", "min":
-			// Validate argument count
 			if len(node.Children) < 2 {
-				return 0, fmt.Errorf("function %q requires 2 arguments", node.Value)
+				return 0, fmt.Errorf("%s requires 2 arguments", node.Value)
 			}
-
-			// Evaluate second argument
+			arg1, err := Eval(node.Children[0])
+			if err != nil {
+				return 0, err
+			}
 			arg2, err := Eval(node.Children[1])
 			if err != nil {
 				return 0, err
 			}
-
 			switch node.Value {
 			case "pow":
-				// Power function with domain validation
 				if arg1 == 0 && arg2 < 0 {
-					return 0, fmt.Errorf("pow: domain error - 0 raised to negative power is undefined")
+					return 0, fmt.Errorf("0 cannot be raised to negative power")
 				}
 				if arg1 < 0 && arg2 != math.Floor(arg2) {
-					return 0, fmt.Errorf("pow: domain error - negative base with non-integer exponent")
+					return 0, fmt.Errorf("negative base with non-integer exponent")
 				}
 				result := math.Pow(arg1, arg2)
-				// Check for overflow to infinity
 				if math.IsInf(result, 0) {
-					return 0, fmt.Errorf("pow: overflow error - pow(%g, %g) exceeds representable range", arg1, arg2)
+					return 0, fmt.Errorf("pow(%g,%g) overflow", arg1, arg2)
 				}
 				return result, nil
 			case "max":
@@ -261,8 +260,9 @@ func Eval(node *parser.Node) (float64, error) {
 		default:
 			return 0, fmt.Errorf("unknown function %q", node.Value)
 		}
-	}
 
-	// Fallback for unhandled node types
-	return 0, fmt.Errorf("invalid node type")
+	default:
+		return 0, fmt.Errorf("invalid node type")
+	}
+	return 0, fmt.Errorf("unreachable code")
 }

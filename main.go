@@ -32,13 +32,18 @@ import (
 	"Axion/history"
 	"Axion/parser"
 	"Axion/tokenizer"
+	"Axion/constants"
+	"Axion/settings"
+	
 	"Axion/units"
 	"bufio"
 	"fmt"
 	"math"
 	"os"
 	"strings"
+	"strconv"
 )
+
 
 // printHelp displays available commands and usage examples to the user
 func printHelp() {
@@ -52,9 +57,17 @@ func printHelp() {
 	fmt.Println("  help                   Show this help message")
 	fmt.Println()
 }
+func clearScreen() {
+    fmt.Print("\033[H\033[2J")
+}
 
 func main() {
 	// Initialize scanner for reading from standard input
+	err := constants.Load("constants.json")
+    if err != nil {
+        fmt.Println("Failed to load constants:", err)
+        return
+    }
 	scanner := bufio.NewScanner(os.Stdin)
 
 	fmt.Println("Welcome to Axion Calculator! Type 'help' for commands.")
@@ -83,7 +96,13 @@ func main() {
 		case input == "exit":
 			fmt.Println("Goodbye!")
 			return
-
+			case input == "cls" || input == "clear":
+    clearScreen()
+case input == "variables":
+for k, v := range evaluator.Vars {
+        fmt.Printf("%s = %g\n", k, v)
+    }
+    continue
 		case input == "help":
 			printHelp()
 			continue
@@ -91,6 +110,24 @@ func main() {
 		case input == "history":
 			history.ShowHistory()
 			continue
+case  strings.HasPrefix(input, "precision") :
+		parts := strings.Fields(input)
+		if len(parts) != 2 {
+			fmt.Println("Usage: precision <number of decimals>")
+			continue
+		}
+		p, err := strconv.Atoi(parts[1])
+		if err != nil {
+			fmt.Println("Invalid number:", err)
+			continue
+		}
+		if err := settings.Set(p); err != nil {
+			fmt.Println(err)
+			continue
+		}
+		fmt.Printf("Precision set to %d decimals\n", settings.Precision)
+		continue
+	
 
 		// Handle unit conversion commands with format: "convert <value> <from> to <to>"
 		case strings.HasPrefix(input, "convert "):

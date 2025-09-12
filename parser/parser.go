@@ -197,74 +197,59 @@ func (p *Parser) parsePostfix() *Node {
 // parseFactor handles primary expressions (precedence level 6 - highest)
 // Primary expressions: numbers, function calls, parenthesized expressions
 func (p *Parser) parseFactor() *Node {
-	// Check for end of input
-	if p.pos >= len(p.Tokens) {
-		return nil
-	}
+    if p.pos >= len(p.Tokens) {
+        return nil
+    }
 
-	tok := p.Tokens[p.pos]
-	p.pos++ // Consume current token
+    tok := p.Tokens[p.pos]
+    p.pos++ // consume current token
+    var node *Node
 
-	var node *Node
+    switch tok.Type {
+    case tokenizer.NUMBER:
+        node = &Node{Type: NODE_NUMBER, Value: tok.Value}
 
-	switch tok.Type {
-	// Handle numeric literals
-	case tokenizer.NUMBER:
-		node = &Node{Type: NODE_NUMBER, Value: tok.Value}
-	case tokenizer.IDENT:
-		node = &Node{
-			Type:  NODE_IDENTIFIER,
-			Value: tok.Value,
-		}
-	// Handle function calls
-	case tokenizer.FUNCTION:
-		// Special case: factorial should not be parsed as prefix function
-		if tok.Value == "!" {
-			p.pos-- // Backtrack - factorial is handled in postfix parsing
-			return nil
-		}
+    case tokenizer.IDENT:
+        // Check if next token is '(' → this is a function call
+        if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "(" {
+            p.pos++ // consume '('
+            var args []*Node
 
-		// Check for function argument list in parentheses
-		if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "(" {
-			p.pos++ // Consume opening parenthesis
-			var args []*Node
+            if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value != ")" {
+                arg := p.ParseExpression()
+                args = append(args, arg)
+                for p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "," {
+                    p.pos++ // consume ','
+                    arg = p.ParseExpression()
+                    args = append(args, arg)
+                }
+            }
 
-			// Parse function arguments
-			if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value != ")" {
-				// Parse first argument as full expression
-				arg := p.ParseExpression()
-				args = append(args, arg)
+            if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == ")" {
+                p.pos++ // consume ')'
+            }
 
-				// Parse additional arguments separated by commas
-				for p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "," {
-					p.pos++ // Consume comma separator
-					arg = p.ParseExpression()
-					args = append(args, arg)
-				}
-			}
+            node = &Node{Type: NODE_FUNCTION, Value: tok.Value, Children: args}
+        } else {
+            // normal identifier/variable
+            node = &Node{Type: NODE_IDENTIFIER, Value: tok.Value}
+        }
 
-			// Consume closing parenthesis if present
-			if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == ")" {
-				p.pos++ // Consume closing parenthesis
-			}
-			// Create function call node with argument list
-			node = &Node{Type: NODE_FUNCTION, Value: tok.Value, Children: args}
-		} else {
-			// Function without parentheses - create node with empty argument list
-			node = &Node{Type: NODE_FUNCTION, Value: tok.Value, Children: []*Node{}}
-		}
+    case tokenizer.FUNCTION:
+        // only factorial "!" handled here if you tokenize it separately
+        if tok.Value == "!" {
+            p.pos--
+            return nil
+        }
 
-	// Handle parenthesized expressions
-	case tokenizer.PAREN:
-		if tok.Value == "(" {
-			// Parse subexpression within parentheses
-			node = p.ParseExpression()
-			// Consume matching closing parenthesis
-			if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == ")" {
-				p.pos++ // Consume closing parenthesis
-			}
-		}
-	}
+    case tokenizer.PAREN:
+        if tok.Value == "(" {
+            node = p.ParseExpression()
+            if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == ")" {
+                p.pos++
+            }
+        }
+    }
 
-	return node
+    return node
 }
