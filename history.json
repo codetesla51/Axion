@@ -1,0 +1,18 @@
+[
+  {
+    "expression": "2e-10 + 3.5E+12",
+    "result": 3500000000000
+  },
+  {
+    "expression": "2e-10 + 3.5E+12",
+    "result": 3500000000000
+  },
+  {
+    "expression": "r = pi",
+    "result": 3.141592653589793
+  },
+  {
+    "expression": "r",
+    "result": 3.141592653589793
+  }
+]

@@ -360,7 +360,7 @@ func Eval(node *Node) (float64, error)
 var Vars map[string]float64
 ```
 
-### Extending Axion
+
 
 #### Adding New Functions
 ```go
