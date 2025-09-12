@@ -441,48 +441,6 @@ We welcome contributions! Axion thrives on community involvement.
 7. **Push** to your branch (`git push origin feature/amazing-feature`)
 8. **Open** a Pull Request with detailed description
 
-### Development Guidelines
-
-#### Code Quality
-- Follow standard Go formatting (`go fmt`)
-- Include comprehensive tests for new features
-- Maintain or improve test coverage
-- Add documentation for public functions
-- Use meaningful variable and function names
-
-#### Testing Requirements
-- Unit tests for all new functions
-- Integration tests for complex features
-- Benchmark tests for performance-critical code
-- Error case coverage
-
-#### Documentation
-- Update README for user-facing features
-- Add inline comments for complex logic
-- Include usage examples
-- Update API documentation
-
-
-### Code Style
-
-```go
-// Good: Clear, documented functions
-func calculateCircleArea(radius float64) (float64, error) {
-    if radius < 0 {
-        return 0, fmt.Errorf("radius must be non-negative")
-    }
-    return math.Pi * radius * radius, nil
-}
-
-// Good: Comprehensive error handling
-result, err := evaluator.Eval(ast)
-if err != nil {
-    return fmt.Errorf("evaluation failed: %w", err)
-}
-```
-
----
-
 
 ---
 
