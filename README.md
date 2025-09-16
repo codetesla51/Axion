@@ -515,7 +515,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 ## Author
 
-**Uthman** - *Creator and Lead Developer*
+**Uthman** - *Creator*
 
 - 🐱 **GitHub**: [@codetesla51](https://github.com/codetesla51)
 -  **Email**: Available through GitHub profile
