@@ -248,7 +248,7 @@ Result: 1000
 >> rate = 0.05
 Result: 0.05
 
->> compound_interest = principal * (1 + rate)^10
+>> compoundInterest = principal * (1 + rate)^10
 Result: 1628.89
 
 # Engineering calculations
