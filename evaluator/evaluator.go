@@ -205,7 +205,7 @@ func Eval(node *parser.Node) (float64, error) {
 				return factorial(arg1)
 			}
 
-		// NEW SINGLE-ARGUMENT FUNCTIONS
+		
 		case "ln", "log10", "round", "trunc", "sign", "deg2rad", "rad2deg":
 			if len(node.Children) < 1 {
 				return 0, fmt.Errorf("%s requires 1 argument", node.Value)
@@ -215,16 +215,13 @@ func Eval(node *parser.Node) (float64, error) {
 				return 0, err
 			}
 			switch node.Value {
-			case "ln":
-				if arg1 <= 0 {
-					return 0, fmt.Errorf("ln: domain error, input must be positive")
-				}
-				return math.Log(arg1), nil
-			case "log10":
+			  	case "ln":
 				if arg1 <= 0 {
 					return 0, fmt.Errorf("log10: domain error, input must be positive")
 				}
-				return math.Log10(arg1), nil
+				return math.Log(arg1), nil
+			
+		
 			case "round":
 				return math.Round(arg1), nil
 			case "trunc":
@@ -242,7 +239,6 @@ func Eval(node *parser.Node) (float64, error) {
 				return arg1 * 180 / math.Pi, nil
 			}
 
-		// FLEXIBLE LOG FUNCTION (1 or 2 arguments)
 		case "log":
 			if len(node.Children) < 1 {
 				return 0, fmt.Errorf("log requires at least 1 argument")
@@ -256,7 +252,7 @@ func Eval(node *parser.Node) (float64, error) {
 				if arg1 <= 0 {
 					return 0, fmt.Errorf("log: domain error, input must be positive")
 				}
-				return math.Log(arg1), nil
+				return math.Log10(arg1), nil
 			} else if len(node.Children) == 2 {
 				// log(x, base) = logarithm base 'base'
 				arg1, err := Eval(node.Children[0])

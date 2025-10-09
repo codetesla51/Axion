@@ -14,5 +14,205 @@
   {
     "expression": "r",
     "result": 3.141592653589793
+  },
+  {
+    "expression": "F = 9.8 * 75",
+    "result": 735
+  },
+  {
+    "expression": "E = F * 10",
+    "result": 7350
+  },
+  {
+    "expression": "principal = 1000",
+    "result": 1000
+  },
+  {
+    "expression": "rate = 0.05",
+    "result": 0.05
+  },
+  {
+    "expression": "compound = principal * (1 + rate)^10",
+    "result": 1628.8946267774415
+  },
+  {
+    "expression": "10! / (5! * 2!)",
+    "result": 15120
+  },
+  {
+    "expression": "2e-10 + 3.5E+12",
+    "result": 3500000000000
+  },
+  {
+    "expression": "log(100) + ln(e) + log2(16)",
+    "result": 11.150347630467653
+  },
+  {
+    "expression": "sin(30) + cos(60) + tan(45)",
+    "result": 1.9999999999999998
+  },
+  {
+    "expression": "((10 + 5) * 2)^2 / 3",
+    "result": 300
+  },
+  {
+    "expression": "x=5",
+    "result": 5
+  },
+  {
+    "expression": "x = 5",
+    "result": 5
+  },
+  {
+    "expression": "x + 3",
+    "result": 8
+  },
+  {
+    "expression": "r = 5",
+    "result": 5
+  },
+  {
+    "expression": "pi * r^2",
+    "result": 78.53981633974483
+  },
+  {
+    "expression": "log(2)",
+    "result": 0.6931471805599453
+  },
+  {
+    "expression": "ln(2)",
+    "result": 0.6931471805599453
+  },
+  {
+    "expression": "mean(1,2,3,4)",
+    "result": 2.5
+  },
+  {
+    "expression": "5!!",
+    "result": 6.689502913449124e+198
+  },
+  {
+    "expression": "3!!l",
+    "result": 720
+  },
+  {
+    "expression": "3!",
+    "result": 6
+  },
+  {
+    "expression": "3!!",
+    "result": 720
+  },
+  {
+    "expression": "log(100) + ln(e) + log2(16)",
+    "result": 11.150347630467653
+  },
+  {
+    "expression": "100 - 1 + 99",
+    "result": 198
+  },
+  {
+    "expression": "100 -1 + 90",
+    "result": 189
+  },
+  {
+    "expression": "x = 5",
+    "result": 5
+  },
+  {
+    "expression": "x = 20",
+    "result": 20
+  },
+  {
+    "expression": "log(10)",
+    "result": 2.302585092994046
+  },
+  {
+    "expression": "log(100)",
+    "result": 4.605170185988092
+  },
+  {
+    "expression": "log(20)",
+    "result": 2.995732273553991
+  },
+  {
+    "expression": "log10(100)",
+    "result": 46.05170185988092
+  },
+  {
+    "expression": "ln(100)",
+    "result": 4.605170185988092
+  },
+  {
+    "expression": "log(1000)",
+    "result": 6.907755278982137
+  },
+  {
+    "expression": "log(100)",
+    "result": 4.605170185988092
+  },
+  {
+    "expression": "log(1000)",
+    "result": 6.907755278982137
+  },
+  {
+    "expression": "log(100)",
+    "result": 4.605170185988092
+  },
+  {
+    "expression": "log(100)",
+    "result": 4.605170185988092
+  },
+  {
+    "expression": "2 / 5",
+    "result": 0.4
+  },
+  {
+    "expression": "1/2",
+    "result": 0.5
+  },
+  {
+    "expression": "log(200)",
+    "result": 5.298317366548036
+  },
+  {
+    "expression": "log(100)",
+    "result": 4.605170185988092
+  },
+  {
+    "expression": "round(100.1)",
+    "result": 100
+  },
+  {
+    "expression": "round(0.4)",
+    "result": 0
+  },
+  {
+    "expression": "round(0.5)",
+    "result": 1
+  },
+  {
+    "expression": "log(100)",
+    "result": 2
+  },
+  {
+    "expression": "log(2,100)",
+    "result": 0.15051499783199057
+  },
+  {
+    "expression": "log(10,100)",
+    "result": 0.5
+  },
+  {
+    "expression": "log(10,1000)",
+    "result": 0.33333333333333337
+  },
+  {
+    "expression": "log(100,2)",
+    "result": 6.643856189774725
+  },
+  {
+    "expression": "log(100,10)",
+    "result": 2
   }
 ]
