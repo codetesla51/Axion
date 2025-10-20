@@ -48,7 +48,7 @@ import (
 type TokenType int
 
 const (
-	NUMBER TokenType = iota     // 0 - numeric literals
+	NUMBER     TokenType = iota // 0 - numeric literals
 	OPERATOR                    // 1 - arithmetic operators (+, -, *, /, ^)
 	PAREN                       // 2 - parentheses
 	FUNCTION                    // 3 - functions (sin, cos, log, etc.)
@@ -57,10 +57,27 @@ const (
 	COMPARISON                  // 6 - comparison operators (>, <, >=, <=, ==, !=)
 	LOGICAL                     // 7 - logical operators (&&, ||, !)
 )
+
 // Token represents a lexical unit
 type Token struct {
 	Type  TokenType
 	Value string
+}
+
+// flushBuffers adds buffered content as tokens
+func flushBuffers(numberBuffer, wordBuffer *string, addToken func(Token)) {
+	if *numberBuffer != "" {
+		addToken(Token{Type: NUMBER, Value: *numberBuffer})
+		*numberBuffer = ""
+	}
+	if *wordBuffer != "" {
+		if isMathFunction(*wordBuffer) {
+			addToken(Token{Type: FUNCTION, Value: *wordBuffer})
+		} else {
+			addToken(Token{Type: IDENT, Value: *wordBuffer})
+		}
+		*wordBuffer = ""
+	}
 }
 
 // Tokenize performs lexical analysis on the input expression
@@ -98,9 +115,9 @@ func Tokenize(input string) ([]Token, error) {
 			if ch == '.' && containsDot(numberBuffer) {
 				return nil, fmt.Errorf("invalid number: multiple decimal points in %q", numberBuffer+string(ch))
 			}
-			if wordBuffer != ""{
-			  wordBuffer += string(ch)
-			  continue
+			if wordBuffer != "" {
+				wordBuffer += string(ch)
+				continue
 			}
 			numberBuffer += string(ch)
 
@@ -134,162 +151,71 @@ func Tokenize(input string) ([]Token, error) {
 
 		// Handle mathematical operators
 		case ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '^':
-			// Flush buffers
-			if numberBuffer != "" {
-				addToken(Token{Type: NUMBER, Value: numberBuffer})
-				numberBuffer = ""
-			}
-			if wordBuffer != "" {
-				if isMathFunction(wordBuffer) {
-					addToken(Token{Type: FUNCTION, Value: wordBuffer})
-				} else {
-					addToken(Token{Type: IDENT, Value: wordBuffer})
-				}
-				wordBuffer = ""
-			}
+			flushBuffers(&numberBuffer, &wordBuffer, addToken)
 			addToken(Token{Type: OPERATOR, Value: string(ch)})
 
 		// Handle assignment operator
 		case ch == '=':
-			// Flush buffers
-			if numberBuffer != "" {
-				addToken(Token{Type: NUMBER, Value: numberBuffer})
-				numberBuffer = ""
-			}
-			if wordBuffer != "" {
-				if isMathFunction(wordBuffer) {
-					addToken(Token{Type: FUNCTION, Value: wordBuffer})
-				} else {
-					addToken(Token{Type: IDENT, Value: wordBuffer})
+			flushBuffers(&numberBuffer, &wordBuffer, addToken)
+			if i+1 < len(input) {
+				next := rune(input[i+1])
+				if next == '=' {
+					addToken(Token{Type: COMPARISON, Value: string(ch) + string(next)})
+					i++
+					continue
 				}
-				wordBuffer = ""
 			}
-			if i+1 < len(input){
-         next := rune(input[i+1])
-         if next == '='{
-           addToken(Token{Type: COMPARISON, Value: string (ch) + string (next)})
-           i++
-           continue 
-         }
-       }
 			addToken(Token{Type: ASSIGN, Value: "="})
-       case ch == '>' || ch == '<':
-       if numberBuffer != "" {
-				addToken(Token{Type: NUMBER, Value: numberBuffer})
-				numberBuffer = ""
-			}
-			if wordBuffer != "" {
-				if isMathFunction(wordBuffer) {
-					addToken(Token{Type: FUNCTION, Value: wordBuffer})
-				} else {
-					addToken(Token{Type: IDENT, Value: wordBuffer})
+
+		case ch == '>' || ch == '<':
+			flushBuffers(&numberBuffer, &wordBuffer, addToken)
+			if i+1 < len(input) {
+				next := rune(input[i+1])
+				if next == '=' {
+					addToken(Token{Type: COMPARISON, Value: string(ch) + string(next)})
+					i++
+					continue
 				}
-				wordBuffer = ""
 			}
-       if i+1 < len(input){
-         next := rune(input[i+1])
-         if next == '='{
-           addToken(Token{Type: COMPARISON, Value: string (ch) + string (next)})
-           i++
-           continue 
-         }
-       }
-       addToken(Token{Type: COMPARISON, Value: string (ch)})
-       case ch == '&' || ch == '|':
-       if numberBuffer != "" {
-				addToken(Token{Type: NUMBER, Value: numberBuffer})
-				numberBuffer = ""
-			}
-			if wordBuffer != "" {
-				if isMathFunction(wordBuffer) {
-					addToken(Token{Type: FUNCTION, Value: wordBuffer})
-				} else {
-					addToken(Token{Type: IDENT, Value: wordBuffer})
+			addToken(Token{Type: COMPARISON, Value: string(ch)})
+
+		case ch == '&' || ch == '|':
+			flushBuffers(&numberBuffer, &wordBuffer, addToken)
+			if i+1 < len(input) {
+				next := rune(input[i+1])
+				if next == ch {
+					addToken(Token{Type: LOGICAL, Value: string(ch) + string(next)})
+					i++
+					continue
 				}
-				wordBuffer = ""
 			}
-			if i+1 < len(input){
-         next := rune(input[i+1])
-         if next ==  ch{
-           addToken(Token{Type: LOGICAL, Value: string (ch) + string (next)})
-           i++
-           continue 
-         }
-       }
-return nil,fmt.Errorf("Invalid logical Operator : %q", ch)       
+			return nil, fmt.Errorf("invalid logical operator: %q", ch)
+
 		case ch == '(' || ch == ')':
-			// Flush buffers
-			if numberBuffer != "" {
-				addToken(Token{Type: NUMBER, Value: numberBuffer})
-				numberBuffer = ""
-			}
-			if wordBuffer != "" {
-				if isMathFunction(wordBuffer) {
-					addToken(Token{Type: FUNCTION, Value: wordBuffer})
-				} else {
-					addToken(Token{Type: IDENT, Value: wordBuffer})
-				}
-				wordBuffer = ""
-			}
+			flushBuffers(&numberBuffer, &wordBuffer, addToken)
 			addToken(Token{Type: PAREN, Value: string(ch)})
 
 		// Handle factorial
 		case ch == '!':
-			// Flush buffers
-			if numberBuffer != "" {
-				addToken(Token{Type: NUMBER, Value: numberBuffer})
-				numberBuffer = ""
-			}
-			if wordBuffer != "" {
-				if isMathFunction(wordBuffer) {
-					addToken(Token{Type: FUNCTION, Value: wordBuffer})
-				} else {
-					addToken(Token{Type: IDENT, Value: wordBuffer})
+			flushBuffers(&numberBuffer, &wordBuffer, addToken)
+			if i+1 < len(input) {
+				next := rune(input[i+1])
+				if next == '=' {
+					addToken(Token{Type: COMPARISON, Value: string(ch) + string(next)})
+					i++
+					continue
 				}
-				wordBuffer = ""
 			}
-			  if i+1 < len(input){
-         next := rune(input[i+1])
-         if next == '='{
-           addToken(Token{Type: COMPARISON, Value: string (ch) + string (next)})
-           i++
-           continue 
-         }
-       }
-       
+
 			addToken(Token{Type: FUNCTION, Value: "!"})
 
 		// Handle whitespace
 		case unicode.IsSpace(ch):
-			// Flush buffers on whitespace
-			if numberBuffer != "" {
-				addToken(Token{Type: NUMBER, Value: numberBuffer})
-				numberBuffer = ""
-			}
-			if wordBuffer != "" {
-				if isMathFunction(wordBuffer) {
-					addToken(Token{Type: FUNCTION, Value: wordBuffer})
-				} else {
-					addToken(Token{Type: IDENT, Value: wordBuffer})
-				}
-				wordBuffer = ""
-			}
+			flushBuffers(&numberBuffer, &wordBuffer, addToken)
 
 		// Handle comma (function argument separator)
 		case ch == ',':
-			// Flush buffers
-			if numberBuffer != "" {
-				addToken(Token{Type: NUMBER, Value: numberBuffer})
-				numberBuffer = ""
-			}
-			if wordBuffer != "" {
-				if isMathFunction(wordBuffer) {
-					addToken(Token{Type: FUNCTION, Value: wordBuffer})
-				} else {
-					addToken(Token{Type: IDENT, Value: wordBuffer})
-				}
-				wordBuffer = ""
-			}
+			flushBuffers(&numberBuffer, &wordBuffer, addToken)
 			addToken(Token{Type: OPERATOR, Value: ","})
 
 		// Handle invalid characters
@@ -299,16 +225,7 @@ return nil,fmt.Errorf("Invalid logical Operator : %q", ch)
 	}
 
 	// Process any remaining buffered content
-	if numberBuffer != "" {
-		addToken(Token{Type: NUMBER, Value: numberBuffer})
-	}
-	if wordBuffer != "" {
-		if isMathFunction(wordBuffer) {
-			addToken(Token{Type: FUNCTION, Value: wordBuffer})
-		} else {
-			addToken(Token{Type: IDENT, Value: wordBuffer})
-		}
-	}
+	flushBuffers(&numberBuffer, &wordBuffer, addToken)
 
 	return tokens, nil
 }
@@ -328,28 +245,28 @@ func isMathFunction(word string) bool {
 	functions := map[string]bool{
 		"sin": true, "cos": true, "tan": true,
 		"asin": true, "acos": true, "atan": true, "atan2": true,
-		
+
 		// Logarithmic
 		"log": true, "log10": true, "log2": true, "ln": true,
-		
+
 		// Power/Root
 		"sqrt": true, "exp": true, "pow": true,
-		
+
 		// Rounding
 		"abs": true, "ceil": true, "floor": true, "round": true, "trunc": true,
-		
+
 		// Utility
 		"sign": true, "mod": true,
-		
+
 		// Conversion
 		"deg2rad": true, "rad2deg": true,
-		
+
 		// Statistical
 		"max": true, "min": true, "mean": true, "median": true,
 		"mode": true, "sum": true, "product": true,
-		
+
 		//reserved
-		"print" : true,
+		"print": true,
 	}
 	return functions[word]
 }
