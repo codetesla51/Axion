@@ -25,12 +25,14 @@
 
 ## Overview
 
-**Axion** is a powerful command-line calculator that transcends simple arithmetic, offering a complete mathematical computing environment. Built with modern Go architecture using the Cobra CLI framework, it features a sophisticated expression parser, extensive mathematical function library, comprehensive unit conversion system, variable management, and persistent calculation history.
+**Axion** is a powerful command-line calculator that transcends simple arithmetic, offering a complete mathematical computing environment. Built with modern Go architecture using the Cobra CLI framework, it features a sophisticated expression parser, extensive mathematical function library, comprehensive unit conversion system, variable management, logical operations, comparison operators, and persistent calculation history.
 
 ### Why Axion?
 
 - **Precision**: Advanced mathematical expression parser with proper operator precedence
 - **Scientific**: Complete scientific notation support and comprehensive function library
+- **Logical Operations**: Full support for boolean logic with `&&`, `||` operators
+- **Comparisons**: Complete comparison operators (`>`, `<`, `>=`, `<=`, `==`, `!=`)
 - **Conversions**: Built-in unit conversion across length, weight, and time categories
 - **Memory**: Persistent calculation history and variable storage across sessions
 - **Performance**: Optimized Go implementation with minimal memory footprint
@@ -46,6 +48,8 @@
 - **Expression Parsing**: Advanced recursive descent parser with proper precedence
 - **Scientific Notation**: Full support (`2e-10`, `3.14e+5`, `1.5E-20`)
 - **Operator Support**: Basic arithmetic, exponentiation (`^`), factorial (`!`)
+- **Logical Operators**: Boolean logic with `&&` (AND), `||` (OR)
+- **Comparison Operators**: `>`, `<`, `>=`, `<=`, `==`, `!=` returning 1 (true) or 0 (false)
 - **Parentheses Grouping**: Complex nested expression support
 - **Implicit Multiplication**: Automatic insertion (`2sin(x)` → `2 * sin(x)`)
 
@@ -60,6 +64,19 @@
 | **Statistical** | `mean()`, `median()`, `mode()`, `sum()`, `product()` | Multi-argument statistics |
 | **Comparison** | `max()`, `min()` | Value comparison |
 | **Special** | `!` (factorial), `mod()` | Advanced operations |
+| **Output** | `print()` | Display values and expressions |
+
+### Logical & Comparison Operations
+- **Comparison Operators**: 
+  - `>` (greater than), `<` (less than)
+  - `>=` (greater or equal), `<=` (less or equal)
+  - `==` (equal), `!=` (not equal)
+  - Returns `1` for true, `0` for false
+- **Logical Operators**:
+  - `&&` (logical AND) - returns `1` if both operands are non-zero
+  - `||` (logical OR) - returns `1` if at least one operand is non-zero
+  - Proper precedence: `&&` binds tighter than `||`
+- **Combined Expressions**: `(x > 5) && (y < 10)`, `2 + 3 > 4 || 0`
 
 ### Variables & Constants
 - **Variable Assignment**: `x = 5`, `result = sin(30) + cos(60)`
@@ -166,8 +183,17 @@ Result: 14
 » sin(30) + cos(60)
 Result: 1
 
+» 5 > 3
+Result: 1
+
+» (5 > 3) && (2 < 4)
+Result: 1
+
 » x = sqrt(16)
 Result: 4
+
+» print(x)
+4
 
 » convert 100 cm to m
 100 cm = 1 m
@@ -178,7 +204,10 @@ Result: 4
 | Command | Syntax | Description | Example |
 |---------|--------|-------------|---------|
 | **Expression** | `<mathematical expression>` | Evaluate any mathematical expression | `2 + 3 * sin(45)` |
+| **Comparison** | `<expr> <op> <expr>` | Compare values (`>`, `<`, `>=`, `<=`, `==`, `!=`) | `5 > 3`, `x == 10` |
+| **Logical** | `<expr> <op> <expr>` | Logical operations (`&&`, `||`) | `(x > 5) && (y < 10)` |
 | **Assignment** | `<variable> = <expression>` | Assign value to variable | `x = 10`, `area = pi * r^2` |
+| **Print** | `print(<expression>)` | Display expression result | `print(2 + 3)`, `print(x)` |
 | **Conversion** | `convert <value> <from> to <to>` | Convert between units | `convert 5 km to mi` |
 | **History** | `history` | Display calculation history | `history` |
 | **Variables** | `variables` or `vars` | Show all stored variables | `variables` |
@@ -211,6 +240,65 @@ Result: 300
 Result: 15120
 ```
 
+### Comparison Operations
+
+```bash
+# Basic comparisons
+» 5 > 3
+Result: 1
+
+» 3 > 5
+Result: 0
+
+» 10 == 10
+Result: 1
+
+» 5 != 3
+Result: 1
+
+# Comparisons with expressions
+» 2 + 3 > 4
+Result: 1
+
+» sin(30) == 0.5
+Result: 1
+
+» (2 * 5) <= 10
+Result: 1
+```
+
+### Logical Operations
+
+```bash
+# Logical AND
+» 1 && 1
+Result: 1
+
+» 5 && 0
+Result: 0
+
+» (5 > 3) && (2 < 4)
+Result: 1
+
+# Logical OR
+» 0 || 1
+Result: 1
+
+» (5 < 3) || (2 < 4)
+Result: 1
+
+# Combined logical and comparison
+» (x > 5) && (x < 10) || (x == 0)
+Result: depends on x value
+
+# Precedence: && before ||
+» 0 || 1 && 0
+Result: 0  # evaluated as: 0 || (1 && 0)
+
+» 1 || 0 && 0
+Result: 1  # evaluated as: 1 || (0 && 0)
+```
+
 ### Advanced Function Usage
 
 ```bash
@@ -232,6 +320,13 @@ Result: 30
 
 » median(1, 3, 3, 6, 7, 8, 9)
 Result: 6
+
+# Print function
+» print(sin(30))
+0.5
+
+» print(2 + 3)
+5
 ```
 
 ### Variable Management
@@ -247,12 +342,20 @@ Result: 78.5398
 » circumference = 2 * pi * radius
 Result: 31.4159
 
+# Variables in comparisons
+» radius > 3
+Result: 1
+
+» isLarge = radius >= 10
+Result: 0
+
 # View all variables
 » variables
 ┌─ Stored Variables ───────────────────────────────────────┐
 │ radius          = 5
 │ area            = 78.5398
 │ circumference   = 31.4159
+│ isLarge         = 0
 └──────────────────────────────────────────────────────────┘
 
 # Use constants
@@ -286,12 +389,28 @@ Result: 299792458
 ### Complex Calculations
 
 ```bash
-# Physics calculations
+# Physics calculations with conditions
 » F = 9.8 * 75  # Force = mass * acceleration
 Result: 735
 
+» isValidForce = F > 0 && F < 1000
+Result: 1
+
 » E = F * 10    # Energy = force * distance
 Result: 7350
+
+# Conditional logic
+» temp = 25
+Result: 25
+
+» isFreezing = temp <= 0
+Result: 0
+
+» isBoiling = temp >= 100
+Result: 0
+
+» isComfortable = (temp > 18) && (temp < 28)
+Result: 1
 
 # Financial calculations
 » principal = 1000
@@ -302,6 +421,9 @@ Result: 0.05
 
 » compoundInterest = principal * (1 + rate)^10
 Result: 1628.89
+
+» isProfit = compoundInterest > principal
+Result: 1
 
 # Engineering calculations
 » voltage = 12
@@ -315,6 +437,9 @@ Result: 30
 
 » resistance = voltage / current
 Result: 4.8
+
+» isSafeVoltage = voltage < 50
+Result: 1
 ```
 
 ---
@@ -368,14 +493,29 @@ User Input (REPL)
 [Cobra CLI Handler] → Command Processing
      ↓
 [Tokenizer] → Lexical Analysis → Token Stream
-     ↓
+     ↓                          (includes COMPARISON, LOGICAL tokens)
 [Parser] → Syntax Analysis → Abstract Syntax Tree (AST)
-     ↓
+     ↓                      (proper precedence: || < && < comparisons < arithmetic)
 [Evaluator] → Mathematical Evaluation → Numerical Result
-     ↓
+     ↓                                  (comparisons return 1/0, logical ops return 1/0)
 [Formatter] → Color-Coded Output → Terminal Display
      ↓
 [History] → Persistent Storage → JSON Archive
+```
+
+### Operator Precedence (Low to High)
+
+```
+1. Assignment         =
+2. Logical OR         ||
+3. Logical AND        &&
+4. Comparison         >, <, >=, <=, ==, !=
+5. Addition/Sub       +, -
+6. Multiplication     *, /
+7. Unary             -x, +x
+8. Exponentiation    ^
+9. Postfix           !
+10. Primary          numbers, functions, parentheses
 ```
 
 ### Key Design Patterns
@@ -399,9 +539,13 @@ func Tokenize(input string) ([]Token, error)
 
 // Token represents lexical unit
 type Token struct {
-    Type  TokenType  // NUMBER, OPERATOR, FUNCTION, etc.
+    Type  TokenType  // NUMBER, OPERATOR, FUNCTION, COMPARISON, LOGICAL, etc.
     Value string     // Token content
 }
+
+// TokenType includes:
+// COMPARISON - for >, <, >=, <=, ==, !=
+// LOGICAL - for &&, ||
 ```
 
 #### Parser API
@@ -411,18 +555,26 @@ func (p *Parser) ParseExpression() *Node
 
 // Node represents AST element
 type Node struct {
-    Type     NodeType  // NODE_NUMBER, NODE_OPERATOR, etc.
+    Type     NodeType  // NODE_NUMBER, NODE_OPERATOR, NODE_COMPARISON, NODE_AND, NODE_OR, etc.
     Value    string    // Node content
     Left     *Node     // Left operand
     Right    *Node     // Right operand
     Children []*Node   // Function arguments
 }
+
+// NodeType includes:
+// NODE_COMPARISON - for comparison operators
+// NODE_AND - for logical AND (&&)
+// NODE_OR - for logical OR (||)
 ```
 
 #### Evaluator API
 ```go
 // Eval recursively evaluates AST nodes
 func Eval(node *Node) (float64, error)
+
+// Comparison operations return 1.0 (true) or 0.0 (false)
+// Logical operations return 1.0 (true) or 0.0 (false)
 
 // Variable storage
 var Vars map[string]float64
@@ -461,6 +613,24 @@ case "newfunction":
         return 0, err
     }
     return yourCalculation(arg1), nil
+```
+
+#### Adding New Operators
+```go
+// In tokenizer/tokenizer.go - add new token type
+const (
+    // ... existing types
+    NEW_OPERATOR
+)
+
+// In parser/parser.go - add precedence level
+func (p *Parser) parseNewOperator() (*Node, error) {
+    // Implementation
+}
+
+// In evaluator/evaluator.go - add evaluation
+case NODE_NEW_OPERATOR:
+    // Evaluation logic
 ```
 
 #### Adding New Constants
@@ -523,14 +693,14 @@ go tool cover -html=coverage.out
 | **Units** | 100% | Passing | Unit conversion system |
 | **Parser** | 76.4% | Passing | AST construction and precedence handling |
 | **Evaluator** | 74.5% | Passing | Mathematical computation and functions |
-| **Tokenizer** | 68.0% | Passing | Lexical analysis and token generation |
+| **Tokenizer** | 94.0% | Passing | Lexical analysis and token generation |
 | **CMD** | 0% | No tests | Cobra CLI handlers (interactive module) |
 | **Constants** | 0% | No tests | Constants management (utility module) |
 | **History** | 0% | No tests | Persistent storage (I/O module) |
 | **Settings** | 0% | No tests | Configuration management (utility module) |
-| **Core Modules** | **79.7%** | Passing | Average coverage of tested modules |
+| **Core Modules** | **86.7%** | Passing | Average coverage of tested modules |
 
-**Note**: Utility modules (constants, history, settings) and the interactive CLI (cmd) currently lack test files. Core computational modules (tokenizer, parser, evaluator, units) have comprehensive test coverage and all tests pass successfully.
+**Note**: Utility modules (constants, history, settings) and the interactive CLI (cmd) currently lack test files. Core computational modules (tokenizer, parser, evaluator, units) have comprehensive test coverage including logical operations and comparison operators, and all tests pass successfully.
 
 ---
 

@@ -454,5 +454,45 @@
   {
     "expression": "print(sin(30))",
     "result": 0.49999999999999994
+  },
+  {
+    "expression": "4 \u003c 5",
+    "result": 1
+  },
+  {
+    "expression": "5 \u003c 6",
+    "result": 1
+  },
+  {
+    "expression": "5 \u003e 6",
+    "result": 0
+  },
+  {
+    "expression": "5 \u0026\u0026 5",
+    "result": 1
+  },
+  {
+    "expression": "6 \u0026\u0026 7",
+    "result": 1
+  },
+  {
+    "expression": "5 == 9",
+    "result": 0
+  },
+  {
+    "expression": "(5 \u003e 3) \u0026\u0026 (2 \u003c 4)",
+    "result": 1
+  },
+  {
+    "expression": "x = 10",
+    "result": 10
+  },
+  {
+    "expression": "(x \u003e 5) || (x \u003c 0)",
+    "result": 1
+  },
+  {
+    "expression": "2 + 3 \u003e 4 \u0026\u0026 1",
+    "result": 1
   }
 ]

@@ -164,76 +164,76 @@ func Eval(node *parser.Node) (float64, error) {
 		default:
 			return 0, fmt.Errorf("unknown operator %q", node.Value)
 		}
-case parser.NODE_COMPARISON:
-left, err := Eval(node.Left)
-if err != nil{
-  return 0, err
-}
+	case parser.NODE_COMPARISON:
+		left, err := Eval(node.Left)
+		if err != nil {
+			return 0, err
+		}
 
-    right, err:= Eval(node.Right)
-    if err != nil{
-      return 0,err
-    }
-switch node.Value {
-case ">":
-    if left > right {
-        return 1.0,nil
-    }
-    return 0.0,nil
-case "<":
-    if left < right {
-        return 1.0,nil
-    }
-    return 0.0,nil
-case ">=":
-    if left >= right {
-        return 1.0,nil
-    }
-    return 0.0,nil
-case "<=":
-    if left <= right {
-        return 1.0,nil
-    }
-    return 0.0,nil
-case "==":
-    if left == right {
-        return 1.0,nil
-    }
-    return 0.0,nil
-case "!=":
-    if left != right {
-        return 1.0,nil
-    }
-    return 0.0,nil
-} 
-case parser.NODE_OR:
-    left, err := Eval(node.Left)
-if err != nil{
-  return 0, err
-}
+		right, err := Eval(node.Right)
+		if err != nil {
+			return 0, err
+		}
+		switch node.Value {
+		case ">":
+			if left > right {
+				return 1.0, nil
+			}
+			return 0.0, nil
+		case "<":
+			if left < right {
+				return 1.0, nil
+			}
+			return 0.0, nil
+		case ">=":
+			if left >= right {
+				return 1.0, nil
+			}
+			return 0.0, nil
+		case "<=":
+			if left <= right {
+				return 1.0, nil
+			}
+			return 0.0, nil
+		case "==":
+			if left == right {
+				return 1.0, nil
+			}
+			return 0.0, nil
+		case "!=":
+			if left != right {
+				return 1.0, nil
+			}
+			return 0.0, nil
+		}
+	case parser.NODE_OR:
+		left, err := Eval(node.Left)
+		if err != nil {
+			return 0, err
+		}
 
-    right, err:= Eval(node.Right)
-    if err != nil{
-      return 0,err
-    }
-    if (left != 0) || (right!= 0){
-      return 1,nil
-    }
-    return 0,nil
-    case parser.NODE_AND:
-    left, err := Eval(node.Left)
-if err != nil{
-  return 0, err
-}
+		right, err := Eval(node.Right)
+		if err != nil {
+			return 0, err
+		}
+		if (left != 0) || (right != 0) {
+			return 1, nil
+		}
+		return 0, nil
+	case parser.NODE_AND:
+		left, err := Eval(node.Left)
+		if err != nil {
+			return 0, err
+		}
 
-    right, err:= Eval(node.Right)
-    if err != nil{
-      return 0,err
-    }
-    if (left != 0) && (right!= 0){
-      return 1,nil
-    }
-    return 0,nil
+		right, err := Eval(node.Right)
+		if err != nil {
+			return 0, err
+		}
+		if (left != 0) && (right != 0) {
+			return 1, nil
+		}
+		return 0, nil
 	case parser.NODE_FUNCTION:
 		switch node.Value {
 
@@ -395,19 +395,19 @@ if err != nil{
 				return vals[n/2], nil
 			}
 			return (vals[n/2-1] + vals[n/2]) / 2, nil
-      case "print":
-      if len(node.Children) < 1{
-        return 0, fmt.Errorf("Print requires one argument")
-      }
-      var printResult float64
-        for _,child := range node.Children{
-        result, err := Eval(child)
-        if err != nil{
-          return 0,err
-        }
-        printResult = result 
-      }
-      return printResult,nil
+		case "print":
+			if len(node.Children) < 1 {
+				return 0, fmt.Errorf("Print requires one argument")
+			}
+			var printResult float64
+			for _, child := range node.Children {
+				result, err := Eval(child)
+				if err != nil {
+					return 0, err
+				}
+				printResult = result
+			}
+			return printResult, nil
 		case "mode":
 			if len(node.Children) < 1 {
 				return 0, fmt.Errorf("mode requires at least 1 argument")
@@ -484,7 +484,7 @@ if err != nil{
 					sum += val
 				}
 				return sum, nil
-			} else { 
+			} else {
 				product := 1.0
 				for _, child := range node.Children {
 					val, err := Eval(child)

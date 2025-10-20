@@ -2,8 +2,8 @@ package parser
 
 import (
 	"Axion/tokenizer"
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestParser_Expression(t *testing.T) {
@@ -180,8 +180,8 @@ func TestParser_Expression(t *testing.T) {
 			},
 		},
 		{
-			name:  "deeply nested parentheses",
-			input: "((((5))))",
+			name:     "deeply nested parentheses",
+			input:    "((((5))))",
 			expected: &Node{Type: NODE_NUMBER, Value: "5"},
 		},
 		{
@@ -216,8 +216,8 @@ func TestParser_Expression(t *testing.T) {
 			},
 		},
 		{
-			name:  "unary plus (ignored)",
-			input: "+5",
+			name:     "unary plus (ignored)",
+			input:    "+5",
 			expected: &Node{Type: NODE_NUMBER, Value: "5"},
 		},
 		{
@@ -373,11 +373,200 @@ func TestParser_Expression(t *testing.T) {
 				},
 			},
 		},
-
+		//Logical operations and Comparison
+		{
+			name:  "Logical OR only",
+			input: "1 || 0 || 1",
+			expected: &Node{
+				Type:  NODE_OR,
+				Value: "||",
+				Left: &Node{
+					Type:  NODE_OR,
+					Value: "||",
+					Left:  &Node{Type: NODE_NUMBER, Value: "1"},
+					Right: &Node{Type: NODE_NUMBER, Value: "0"},
+				},
+				Right: &Node{Type: NODE_NUMBER, Value: "1"},
+			},
+		},
+		{
+			name:  "Logical AND only",
+			input: "1 && 0 && 1",
+			expected: &Node{
+				Type:  NODE_AND,
+				Value: "&&",
+				Left: &Node{
+					Type:  NODE_AND,
+					Value: "&&",
+					Left:  &Node{Type: NODE_NUMBER, Value: "1"},
+					Right: &Node{Type: NODE_NUMBER, Value: "0"},
+				},
+				Right: &Node{Type: NODE_NUMBER, Value: "1"},
+			},
+		},
+		{
+			name:  "Logical AND and OR - correct precedence",
+			input: "2 && 3 || 5",
+			expected: &Node{
+				Type:  NODE_OR,
+				Value: "||",
+				Left: &Node{
+					Type:  NODE_AND,
+					Value: "&&",
+					Left:  &Node{Type: NODE_NUMBER, Value: "2"},
+					Right: &Node{Type: NODE_NUMBER, Value: "3"},
+				},
+				Right: &Node{Type: NODE_NUMBER, Value: "5"},
+			},
+		},
+		{
+			name:  "Multiple AND with OR",
+			input: "1 && 2 && 3 || 4",
+			expected: &Node{
+				Type:  NODE_OR,
+				Value: "||",
+				Left: &Node{
+					Type:  NODE_AND,
+					Value: "&&",
+					Left: &Node{
+						Type:  NODE_AND,
+						Value: "&&",
+						Left:  &Node{Type: NODE_NUMBER, Value: "1"},
+						Right: &Node{Type: NODE_NUMBER, Value: "2"},
+					},
+					Right: &Node{Type: NODE_NUMBER, Value: "3"},
+				},
+				Right: &Node{Type: NODE_NUMBER, Value: "4"},
+			},
+		},
+		{
+			name:  "OR with multiple AND",
+			input: "1 || 2 && 3 && 4",
+			expected: &Node{
+				Type:  NODE_OR,
+				Value: "||",
+				Left:  &Node{Type: NODE_NUMBER, Value: "1"},
+				Right: &Node{
+					Type:  NODE_AND,
+					Value: "&&",
+					Left: &Node{
+						Type:  NODE_AND,
+						Value: "&&",
+						Left:  &Node{Type: NODE_NUMBER, Value: "2"},
+						Right: &Node{Type: NODE_NUMBER, Value: "3"},
+					},
+					Right: &Node{Type: NODE_NUMBER, Value: "4"},
+				},
+			},
+		},
+		{
+			name:  "Comparison with logical operators",
+			input: "5 > 3 && 2 < 4",
+			expected: &Node{
+				Type:  NODE_AND,
+				Value: "&&",
+				Left: &Node{
+					Type:  NODE_COMPARISON,
+					Value: ">",
+					Left:  &Node{Type: NODE_NUMBER, Value: "5"},
+					Right: &Node{Type: NODE_NUMBER, Value: "3"},
+				},
+				Right: &Node{
+					Type:  NODE_COMPARISON,
+					Value: "<",
+					Left:  &Node{Type: NODE_NUMBER, Value: "2"},
+					Right: &Node{Type: NODE_NUMBER, Value: "4"},
+				},
+			},
+		},
+		{
+			name:  "Complex logical with comparisons",
+			input: "x > 5 && y < 10 || z == 0",
+			expected: &Node{
+				Type:  NODE_OR,
+				Value: "||",
+				Left: &Node{
+					Type:  NODE_AND,
+					Value: "&&",
+					Left: &Node{
+						Type:  NODE_COMPARISON,
+						Value: ">",
+						Left:  &Node{Type: NODE_IDENTIFIER, Value: "x"},
+						Right: &Node{Type: NODE_NUMBER, Value: "5"},
+					},
+					Right: &Node{
+						Type:  NODE_COMPARISON,
+						Value: "<",
+						Left:  &Node{Type: NODE_IDENTIFIER, Value: "y"},
+						Right: &Node{Type: NODE_NUMBER, Value: "10"},
+					},
+				},
+				Right: &Node{
+					Type:  NODE_COMPARISON,
+					Value: "==",
+					Left:  &Node{Type: NODE_IDENTIFIER, Value: "z"},
+					Right: &Node{Type: NODE_NUMBER, Value: "0"},
+				},
+			},
+		},
+		{
+			name:  "Logical with arithmetic",
+			input: "2 + 3 > 4 && 1",
+			expected: &Node{
+				Type:  NODE_AND,
+				Value: "&&",
+				Left: &Node{
+					Type:  NODE_COMPARISON,
+					Value: ">",
+					Left: &Node{
+						Type:  NODE_OPERATOR,
+						Value: "+",
+						Left:  &Node{Type: NODE_NUMBER, Value: "2"},
+						Right: &Node{Type: NODE_NUMBER, Value: "3"},
+					},
+					Right: &Node{Type: NODE_NUMBER, Value: "4"},
+				},
+				Right: &Node{Type: NODE_NUMBER, Value: "1"},
+			},
+		},
+		{
+			name:  "Parentheses with logical operators",
+			input: "(1 || 0) && 1",
+			expected: &Node{
+				Type:  NODE_AND,
+				Value: "&&",
+				Left: &Node{
+					Type:  NODE_OR,
+					Value: "||",
+					Left:  &Node{Type: NODE_NUMBER, Value: "1"},
+					Right: &Node{Type: NODE_NUMBER, Value: "0"},
+				},
+				Right: &Node{Type: NODE_NUMBER, Value: "1"},
+			},
+		},
+		{
+			name:  "Assignment with logical operators",
+			input: "x = 5 > 3 && 1",
+			expected: &Node{
+				Type:  NODE_ASSIGN,
+				Value: "x",
+				Right: &Node{
+					Type:  NODE_AND,
+					Value: "&&",
+					Left: &Node{
+						Type:  NODE_COMPARISON,
+						Value: ">",
+						Left:  &Node{Type: NODE_NUMBER, Value: "5"},
+						Right: &Node{Type: NODE_NUMBER, Value: "3"},
+					},
+					Right: &Node{Type: NODE_NUMBER, Value: "1"},
+				},
+			},
+		},
 		// Variables/Identifiers
 		{
-			name:  "single variable",
-			input: "x",
+			name:     "single variable",
+			input:    "x",
 			expected: &Node{Type: NODE_IDENTIFIER, Value: "x"},
 		},
 		{
@@ -529,8 +718,8 @@ func TestParser_Expression(t *testing.T) {
 
 		// Edge cases
 		{
-			name:  "single number",
-			input: "42",
+			name:     "single number",
+			input:    "42",
 			expected: &Node{Type: NODE_NUMBER, Value: "42"},
 		},
 	}

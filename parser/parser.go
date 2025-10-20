@@ -64,6 +64,9 @@ const (
 	NODE_FUNCTION                   // Function call nodes with argument lists
 	NODE_ASSIGN                     // Variable assignment nodes
 	NODE_IDENTIFIER                 // Variable and constant references
+	NODE_OR
+	NODE_AND
+	NODE_COMPARISON
 )
 
 // Node represents a single node in the Abstract Syntax Tree
@@ -92,7 +95,6 @@ func (p *Parser) ParseExpression() (*Node, error) {
 		return nil, err
 	}
 
-	// Check for unconsumed tokens (except trailing whitespace/EOF)
 	if p.pos < len(p.Tokens) {
 		tok := p.Tokens[p.pos]
 		return nil, fmt.Errorf("unexpected token '%s' at position %d", tok.Value, p.pos)
@@ -107,9 +109,9 @@ func (p *Parser) parseAssignment() (*Node, error) {
 		p.Tokens[p.pos+1].Type == tokenizer.ASSIGN {
 
 		varName := p.Tokens[p.pos].Value
-		p.pos += 2 // skip IDENT and ASSIGN
+		p.pos += 2
 
-		rightNode, err := p.parseAddSub()
+		rightNode, err := p.parseLogicalOr()
 		if err != nil {
 			return nil, err
 		}
@@ -124,7 +126,97 @@ func (p *Parser) parseAssignment() (*Node, error) {
 		}, nil
 	}
 
-	return p.parseAddSub()
+	return p.parseLogicalOr() // ← Changed from parseAddSub()
+}
+
+func (p *Parser) parseLogicalOr() (*Node, error) {
+	node, err := p.parseLogicalAnd()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.pos < len(p.Tokens) {
+		tok := p.Tokens[p.pos]
+		if tok.Type == tokenizer.LOGICAL && tok.Value == "||" {
+			p.pos++
+			rightNode, err := p.parseLogicalAnd()
+			if err != nil {
+				return nil, err
+			}
+			if rightNode == nil {
+				return nil, fmt.Errorf("expected expression after '%s'", tok.Value)
+			}
+			node = &Node{
+				Type:  NODE_OR,
+				Value: "||",
+				Left:  node,
+				Right: rightNode,
+			}
+		} else {
+			break
+		}
+	}
+	return node, nil
+}
+
+func (p *Parser) parseLogicalAnd() (*Node, error) {
+	node, err := p.parseComparison()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.pos < len(p.Tokens) {
+		tok := p.Tokens[p.pos]
+		if tok.Type == tokenizer.LOGICAL && tok.Value == "&&" {
+			p.pos++
+			rightNode, err := p.parseComparison()
+			if err != nil {
+				return nil, err
+			}
+			if rightNode == nil {
+				return nil, fmt.Errorf("expected expression after '%s'", tok.Value)
+			}
+			node = &Node{
+				Type:  NODE_AND,
+				Value: "&&",
+				Left:  node,
+				Right: rightNode,
+			}
+		} else {
+			break
+		}
+	}
+	return node, nil
+}
+
+func (p *Parser) parseComparison() (*Node, error) {
+	node, err := p.parseAddSub()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.pos < len(p.Tokens) {
+		tok := p.Tokens[p.pos]
+		if tok.Type == tokenizer.COMPARISON {
+			p.pos++
+			rightNode, err := p.parseAddSub()
+			if err != nil {
+				return nil, err
+			}
+			if rightNode == nil {
+				return nil, fmt.Errorf("expected expression after '%s'", tok.Value)
+			}
+			node = &Node{
+				Type:  NODE_COMPARISON,
+				Value: tok.Value,
+				Left:  node,
+				Right: rightNode,
+			}
+		} else {
+			break
+		}
+	}
+	return node, nil
 }
 
 func (p *Parser) parseAddSub() (*Node, error) {

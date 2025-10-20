@@ -79,10 +79,10 @@ func TestConvert_Invalid(t *testing.T) {
 	tests := []struct {
 		from, to string
 	}{
-		{"m", "kg"},     // cross-category
-		{"s", "lb"},     // cross-category
+		{"m", "kg"},      // cross-category
+		{"s", "lb"},      // cross-category
 		{"unknown", "m"}, // unknown unit
-		{"kg", "xyz"},   // unknown unit
+		{"kg", "xyz"},    // unknown unit
 	}
 
 	for _, tt := range tests {
