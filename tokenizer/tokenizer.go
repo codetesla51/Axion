@@ -44,27 +44,24 @@ import (
 	"unicode"
 )
 
-// TokenType defines the categories of tokens
 type TokenType int
 
 const (
-	NUMBER     TokenType = iota // 0 - numeric literals
-	OPERATOR                    // 1 - arithmetic operators (+, -, *, /, ^)
-	PAREN                       // 2 - parentheses
-	FUNCTION                    // 3 - functions (sin, cos, log, etc.)
-	IDENT                       // 4 - identifiers/variables
-	ASSIGN                      // 5 - assignment (=)
-	COMPARISON                  // 6 - comparison operators (>, <, >=, <=, ==, !=)
-	LOGICAL                     // 7 - logical operators (&&, ||, !)
+	NUMBER TokenType = iota
+	OPERATOR
+	PAREN
+	FUNCTION
+	IDENT
+	ASSIGN
+	COMPARISON
+	LOGICAL
 )
 
-// Token represents a lexical unit
 type Token struct {
 	Type  TokenType
 	Value string
 }
 
-// flushBuffers adds buffered content as tokens
 func flushBuffers(numberBuffer, wordBuffer *string, addToken func(Token)) {
 	if *numberBuffer != "" {
 		addToken(Token{Type: NUMBER, Value: *numberBuffer})
@@ -80,38 +77,29 @@ func flushBuffers(numberBuffer, wordBuffer *string, addToken func(Token)) {
 	}
 }
 
-// Tokenize performs lexical analysis on the input expression
 func Tokenize(input string) ([]Token, error) {
 	var tokens []Token
 	var numberBuffer string
 	var wordBuffer string
 
-	// Helper function to add tokens with implicit multiplication
 	addToken := func(t Token) {
-		// Insert implicit multiplication operators where needed
 		if len(tokens) > 0 {
 			last := tokens[len(tokens)-1]
 
-			// Special case: factorial operators do not require preceding multiplication
 			if t.Type == FUNCTION && t.Value == "!" {
-				// No implicit multiplication before factorial
 			} else if (last.Type == NUMBER || (last.Type == PAREN && last.Value == ")")) &&
 				(t.Type == NUMBER || t.Type == FUNCTION || t.Type == IDENT || (t.Type == PAREN && t.Value == "(")) {
-				// Insert multiplication between appropriate tokens
 				tokens = append(tokens, Token{Type: OPERATOR, Value: "*"})
 			}
 		}
 		tokens = append(tokens, t)
 	}
 
-	// Character-by-character processing
 	for i := 0; i < len(input); i++ {
 		ch := rune(input[i])
 
 		switch {
-		// Handle digits and decimal points
 		case unicode.IsDigit(ch) || ch == '.':
-			// Validate decimal point usage
 			if ch == '.' && containsDot(numberBuffer) {
 				return nil, fmt.Errorf("invalid number: multiple decimal points in %q", numberBuffer+string(ch))
 			}
@@ -121,7 +109,6 @@ func Tokenize(input string) ([]Token, error) {
 			}
 			numberBuffer += string(ch)
 
-			// Handle scientific notation
 			if i+1 < len(input) && (input[i+1] == 'e' || input[i+1] == 'E') {
 				i++
 				numberBuffer += string(input[i])
