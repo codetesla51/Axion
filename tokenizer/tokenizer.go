@@ -97,6 +97,10 @@ func Tokenize(input string) ([]Token, error) {
 			if ch == '.' && containsDot(numberBuffer) {
 				return nil, fmt.Errorf("invalid number: multiple decimal points in %q", numberBuffer+string(ch))
 			}
+			if wordBuffer != ""{
+			  wordBuffer += string(ch)
+			  continue
+			}
 			numberBuffer += string(ch)
 
 			// Handle scientific notation
@@ -263,12 +267,26 @@ func containsDot(s string) bool {
 func isMathFunction(word string) bool {
 	functions := map[string]bool{
 		"sin": true, "cos": true, "tan": true,
-		"asin": true, "acos": true, "atan": true,
-		"sqrt": true, "exp": true, "abs": true,
-		"ceil": true, "floor": true, "log": true,
-		"log10": true, "pow": true, "max": true,
-		"min": true, "mean": true, "median": true,
-		"mode": true,
+		"asin": true, "acos": true, "atan": true, "atan2": true,
+		
+		// Logarithmic
+		"log": true, "log10": true, "log2": true, "ln": true,
+		
+		// Power/Root
+		"sqrt": true, "exp": true, "pow": true,
+		
+		// Rounding
+		"abs": true, "ceil": true, "floor": true, "round": true, "trunc": true,
+		
+		// Utility
+		"sign": true, "mod": true,
+		
+		// Conversion
+		"deg2rad": true, "rad2deg": true,
+		
+		// Statistical
+		"max": true, "min": true, "mean": true, "median": true,
+		"mode": true, "sum": true, "product": true,
 	}
 	return functions[word]
 }

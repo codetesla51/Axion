@@ -214,5 +214,97 @@
   {
     "expression": "log(100,10)",
     "result": 2
+  },
+  {
+    "expression": "2+2",
+    "result": 4
+  },
+  {
+    "expression": "-5",
+    "result": -5
+  },
+  {
+    "expression": "+4",
+    "result": 4
+  },
+  {
+    "expression": "5--5",
+    "result": 10
+  },
+  {
+    "expression": "-(-5)",
+    "result": 5
+  },
+  {
+    "expression": "2++3",
+    "result": 5
+  },
+  {
+    "expression": "max (5,10)",
+    "result": 10
+  },
+  {
+    "expression": "log(100)",
+    "result": 2
+  },
+  {
+    "expression": "log10(100)",
+    "result": 20
+  },
+  {
+    "expression": "log10(100)",
+    "result": 20
+  },
+  {
+    "expression": "mod(1,2)",
+    "result": 1
+  },
+  {
+    "expression": "log10(100)",
+    "result": 20
+  },
+  {
+    "expression": "log10(100)",
+    "result": 2
+  },
+  {
+    "expression": "round(-4.0)",
+    "result": -4
+  },
+  {
+    "expression": "round(-.44)",
+    "result": -0
+  },
+  {
+    "expression": "round(-4.4)",
+    "result": -4
+  },
+  {
+    "expression": "atan2(1,1)",
+    "result": 45
+  },
+  {
+    "expression": "atan2(1,-1)",
+    "result": -45
+  },
+  {
+    "expression": "atan2(1,-1)",
+    "result": -45
+  },
+  {
+    "expression": "atan2(-1,1)",
+    "result": 135
+  },
+  {
+    "expression": "atan2(1,-1)",
+    "result": 135
+  },
+  {
+    "expression": "atan2(-1,1)",
+    "result": -45
+  },
+  {
+    "expression": "round(-4.5)",
+    "result": -5
   }
 ]

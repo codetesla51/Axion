@@ -250,9 +250,9 @@ func main() {
 			}
 
 			p := parser.Parser{Tokens: tokens}
-			ast := p.ParseExpression()
-			if ast == nil {
-				fmt.Println("Error: Invalid expression")
+			ast , err := p.ParseExpression()
+			if err !=  nil {
+				fmt.Println("Error: ",err)
 				continue
 			}
 

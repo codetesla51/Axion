@@ -52,17 +52,18 @@ package parser
 
 import (
 	"Axion/tokenizer"
+	"fmt"
 )
 
 // NodeType categorizes AST node types for evaluation dispatch
 type NodeType int
 
 const (
-	NODE_NUMBER   NodeType = iota // Terminal nodes containing numeric literals
-	NODE_OPERATOR                 // Internal nodes representing operations
-	NODE_FUNCTION                 // Function call nodes with argument lists
-	NODE_ASSIGN
-	NODE_IDENTIFIER
+	NODE_NUMBER     NodeType = iota // Terminal nodes containing numeric literals
+	NODE_OPERATOR                   // Internal nodes representing operations
+	NODE_FUNCTION                   // Function call nodes with argument lists
+	NODE_ASSIGN                     // Variable assignment nodes
+	NODE_IDENTIFIER                 // Variable and constant references
 )
 
 // Node represents a single node in the Abstract Syntax Tree
@@ -81,11 +82,26 @@ type Parser struct {
 }
 
 // ParseExpression initiates parsing at the lowest precedence level
-func (p *Parser) ParseExpression() *Node {
-	return p.parseAssignment()
+func (p *Parser) ParseExpression() (*Node, error) {
+	if len(p.Tokens) == 0 {
+		return nil, fmt.Errorf("empty expression")
+	}
+
+	node, err := p.parseAssignment()
+	if err != nil {
+		return nil, err
+	}
+
+	// Check for unconsumed tokens (except trailing whitespace/EOF)
+	if p.pos < len(p.Tokens) {
+		tok := p.Tokens[p.pos]
+		return nil, fmt.Errorf("unexpected token '%s' at position %d", tok.Value, p.pos)
+	}
+
+	return node, nil
 }
 
-func (p *Parser) parseAssignment() *Node {
+func (p *Parser) parseAssignment() (*Node, error) {
 	if p.pos+1 < len(p.Tokens) &&
 		p.Tokens[p.pos].Type == tokenizer.IDENT &&
 		p.Tokens[p.pos+1].Type == tokenizer.ASSIGN {
@@ -93,88 +109,143 @@ func (p *Parser) parseAssignment() *Node {
 		varName := p.Tokens[p.pos].Value
 		p.pos += 2 // skip IDENT and ASSIGN
 
-		rightNode := p.parseAddSub()
+		rightNode, err := p.parseAddSub()
+		if err != nil {
+			return nil, err
+		}
+		if rightNode == nil {
+			return nil, fmt.Errorf("expected expression after '='")
+		}
 
 		return &Node{
 			Type:  NODE_ASSIGN,
 			Value: varName,
 			Right: rightNode,
-		}
+		}, nil
 	}
 
 	return p.parseAddSub()
 }
 
-func (p *Parser) parseAddSub() *Node {
-	node := p.parseMulDiv()
+func (p *Parser) parseAddSub() (*Node, error) {
+	node, err := p.parseMulDiv()
+	if err != nil {
+		return nil, err
+	}
+	if node == nil {
+		return nil, fmt.Errorf("expected expression")
+	}
 
 	for p.pos < len(p.Tokens) {
 		tok := p.Tokens[p.pos]
 		if tok.Type == tokenizer.OPERATOR && (tok.Value == "+" || tok.Value == "-") {
 			p.pos++
-			right := p.parseMulDiv()
+			right, err := p.parseMulDiv()
+			if err != nil {
+				return nil, err
+			}
+			if right == nil {
+				return nil, fmt.Errorf("expected expression after '%s'", tok.Value)
+			}
 			node = &Node{Type: NODE_OPERATOR, Value: tok.Value, Left: node, Right: right}
 		} else {
 			break
 		}
 	}
-	return node
+	return node, nil
 }
 
-func (p *Parser) parseMulDiv() *Node {
-	node := p.parseUnary()
+func (p *Parser) parseMulDiv() (*Node, error) {
+	node, err := p.parseUnary()
+	if err != nil {
+		return nil, err
+	}
+	if node == nil {
+		return nil, fmt.Errorf("expected expression")
+	}
 
 	for p.pos < len(p.Tokens) {
 		tok := p.Tokens[p.pos]
 		if tok.Type == tokenizer.OPERATOR && (tok.Value == "*" || tok.Value == "/") {
 			p.pos++
-			right := p.parseUnary()
+			right, err := p.parseUnary()
+			if err != nil {
+				return nil, err
+			}
+			if right == nil {
+				return nil, fmt.Errorf("expected expression after '%s'", tok.Value)
+			}
 			node = &Node{Type: NODE_OPERATOR, Value: tok.Value, Left: node, Right: right}
 		} else {
 			break
 		}
 	}
-	return node
+	return node, nil
 }
 
-func (p *Parser) parseUnary() *Node {
+func (p *Parser) parseUnary() (*Node, error) {
 	if p.pos >= len(p.Tokens) {
-		return nil
+		return nil, fmt.Errorf("unexpected end of expression")
 	}
 
 	tok := p.Tokens[p.pos]
 	if tok.Type == tokenizer.OPERATOR && (tok.Value == "-" || tok.Value == "+") {
 		p.pos++
-		child := p.parseExponent()
+		child, err := p.parseExponent()
+		if err != nil {
+			return nil, err
+		}
+		if child == nil {
+			return nil, fmt.Errorf("expected expression after unary '%s'", tok.Value)
+		}
 		if tok.Value == "-" {
 			return &Node{
 				Type:  NODE_OPERATOR,
 				Value: "neg",
 				Left:  child,
-			}
+			}, nil
 		}
-		return child
+		return child, nil
 	}
 
 	return p.parseExponent()
 }
 
-func (p *Parser) parseExponent() *Node {
-	node := p.parsePostfix()
+func (p *Parser) parseExponent() (*Node, error) {
+	node, err := p.parsePostfix()
+	if err != nil {
+		return nil, err
+	}
+	if node == nil {
+		return nil, fmt.Errorf("expected expression")
+	}
 
 	if p.pos < len(p.Tokens) {
 		tok := p.Tokens[p.pos]
 		if tok.Type == tokenizer.OPERATOR && tok.Value == "^" {
 			p.pos++
-			right := p.parseUnary()
-			return &Node{Type: NODE_OPERATOR, Value: "^", Left: node, Right: right}
+			// RIGHT ASSOCIATIVE: recursively call parseExponent
+			right, err := p.parseExponent()
+			if err != nil {
+				return nil, err
+			}
+			if right == nil {
+				return nil, fmt.Errorf("expected expression after '^'")
+			}
+			return &Node{Type: NODE_OPERATOR, Value: "^", Left: node, Right: right}, nil
 		}
 	}
-	return node
+	return node, nil
 }
 
-func (p *Parser) parsePostfix() *Node {
-	node := p.parseFactor()
+func (p *Parser) parsePostfix() (*Node, error) {
+	node, err := p.parseFactor()
+	if err != nil {
+		return nil, err
+	}
+	if node == nil {
+		return nil, fmt.Errorf("expected expression")
+	}
 
 	for p.pos < len(p.Tokens) {
 		tok := p.Tokens[p.pos]
@@ -190,13 +261,13 @@ func (p *Parser) parsePostfix() *Node {
 		}
 	}
 
-	return node
+	return node, nil
 }
 
 // parseFactor handles primary expressions
-func (p *Parser) parseFactor() *Node {
+func (p *Parser) parseFactor() (*Node, error) {
 	if p.pos >= len(p.Tokens) {
-		return nil
+		return nil, fmt.Errorf("unexpected end of expression")
 	}
 
 	tok := p.Tokens[p.pos]
@@ -208,24 +279,30 @@ func (p *Parser) parseFactor() *Node {
 		node = &Node{Type: NODE_NUMBER, Value: tok.Value}
 
 	case tokenizer.IDENT:
-		// Check if next token is '(' → function call
 		if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "(" {
 			p.pos++ // consume '('
 			var args []*Node
 
 			if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value != ")" {
-				arg := p.ParseExpression()
+				arg, err := p.parseAssignment()
+				if err != nil {
+					return nil, err
+				}
 				args = append(args, arg)
 				for p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "," {
 					p.pos++ // consume ','
-					arg = p.ParseExpression()
+					arg, err = p.parseAssignment()
+					if err != nil {
+						return nil, err
+					}
 					args = append(args, arg)
 				}
 			}
 
-			if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == ")" {
-				p.pos++ // consume ')'
+			if p.pos >= len(p.Tokens) || p.Tokens[p.pos].Value != ")" {
+				return nil, fmt.Errorf("unmatched opening parenthesis in function call '%s'", tok.Value)
 			}
+			p.pos++ // consume ')'
 
 			node = &Node{Type: NODE_FUNCTION, Value: tok.Value, Children: args}
 		} else {
@@ -237,25 +314,32 @@ func (p *Parser) parseFactor() *Node {
 		if tok.Value == "!" {
 			// Factorial is handled in postfix
 			p.pos--
-			return nil
+			return nil, fmt.Errorf("unexpected factorial operator")
 		} else {
 			if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "(" {
 				p.pos++ // consume '('
 				var args []*Node
 
 				if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value != ")" {
-					arg := p.ParseExpression()
+					arg, err := p.parseAssignment()
+					if err != nil {
+						return nil, err
+					}
 					args = append(args, arg)
 					for p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == "," {
 						p.pos++ // consume ','
-						arg = p.ParseExpression()
+						arg, err = p.parseAssignment()
+						if err != nil {
+							return nil, err
+						}
 						args = append(args, arg)
 					}
 				}
 
-				if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == ")" {
-					p.pos++ // consume ')'
+				if p.pos >= len(p.Tokens) || p.Tokens[p.pos].Value != ")" {
+					return nil, fmt.Errorf("unmatched opening parenthesis in function '%s'", tok.Value)
 				}
+				p.pos++ // consume ')'
 
 				node = &Node{Type: NODE_FUNCTION, Value: tok.Value, Children: args}
 			} else {
@@ -266,12 +350,25 @@ func (p *Parser) parseFactor() *Node {
 
 	case tokenizer.PAREN:
 		if tok.Value == "(" {
-			node = p.ParseExpression()
-			if p.pos < len(p.Tokens) && p.Tokens[p.pos].Value == ")" {
-				p.pos++
+			subExpr, err := p.parseAssignment()
+			if err != nil {
+				return nil, err
 			}
+			if subExpr == nil {
+				return nil, fmt.Errorf("empty parentheses")
+			}
+			if p.pos >= len(p.Tokens) || p.Tokens[p.pos].Value != ")" {
+				return nil, fmt.Errorf("unmatched opening parenthesis")
+			}
+			p.pos++ // consume ')'
+			node = subExpr
+		} else if tok.Value == ")" {
+			return nil, fmt.Errorf("unexpected closing parenthesis")
 		}
+
+	default:
+		return nil, fmt.Errorf("unexpected token: %s", tok.Value)
 	}
 
-	return node
+	return node, nil
 }
