@@ -2,6 +2,12 @@
 
 <div align="center">
 
+```
+  ╔═╗─┐ ┬┬┌─┐┌┐┌
+  ╠═╣┌┴┬┘││ ││││
+  ╩ ╩┴ └─┴└─┘┘└┘
+```
+
 **A sophisticated, high-precision mathematical engine with advanced CLI interface, built in Go**
 
 [![Go Version](https://img.shields.io/badge/Go-1.24.5-00ADD8?style=flat-square&logo=go)](https://golang.org)
@@ -19,7 +25,7 @@
 
 ## Overview
 
-**Axion** is a powerful command-line calculator that transcends simple arithmetic, offering a complete mathematical computing environment. Built with modern Go architecture, it features a sophisticated expression parser, extensive mathematical function library, comprehensive unit conversion system, variable management, and persistent calculation history.
+**Axion** is a powerful command-line calculator that transcends simple arithmetic, offering a complete mathematical computing environment. Built with modern Go architecture using the Cobra CLI framework, it features a sophisticated expression parser, extensive mathematical function library, comprehensive unit conversion system, variable management, and persistent calculation history.
 
 ### Why Axion?
 
@@ -28,6 +34,7 @@
 - **Conversions**: Built-in unit conversion across length, weight, and time categories
 - **Memory**: Persistent calculation history and variable storage across sessions
 - **Performance**: Optimized Go implementation with minimal memory footprint
+- **Modern CLI**: Beautiful, color-coded interface powered by Cobra framework
 - **Reliability**: Comprehensive error handling and 95%+ test coverage
 - **Extensible**: Modular architecture for easy feature additions
 
@@ -69,9 +76,10 @@
 ### Advanced Features
 - **Calculation History**: JSON-based persistent storage with session continuity
 - **Precision Control**: Configurable decimal precision (0-20 places)
-- **Interactive CLI**: User-friendly command interface with help system
+- **Interactive REPL**: Beautiful color-coded command interface with help system
 - **Error Handling**: Comprehensive error reporting with context
 - **Cross-Platform**: Native support for Windows, macOS, and Linux
+- **Cobra Framework**: Professional CLI with subcommands and flags
 
 ---
 
@@ -83,12 +91,41 @@
 
 ### Quick Installation
 
+#### Using Install Script (Linux/macOS)
+
+```bash
+# Clone the repository
+git clone https://github.com/codetesla51/Axion.git
+cd Axion
+
+# Run the installation script
+chmod +x install.sh
+./install.sh
+
+# Reload your shell configuration
+source ~/.bashrc  # or ~/.zshrc for Zsh users
+
+# Verify installation
+axion --help
+```
+
+The install script will:
+- Build the Axion binary
+- Create a symlink in `~/.local/bin/axion`
+- Automatically detect your shell (bash/zsh)
+- Add `~/.local/bin` to your PATH if needed
+
+#### Manual Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/codetesla51/Axion.git
 
 # Navigate to project directory
 cd Axion
+
+# Install dependencies
+go mod download
 
 # Run directly (recommended for development)
 go run main.go
@@ -98,6 +135,13 @@ go build -o axion
 ./axion  # Unix/macOS
 # axion.exe  # Windows
 ```
+
+#### Installation via Go Install
+
+```bash
+go install github.com/codetesla51/Axion@latest
+```
+
 ---
 
 ## Usage
@@ -107,19 +151,25 @@ go build -o axion
 Launch Axion and start calculating:
 
 ```bash
-./axion
+axion
 
-Welcome to Axion Calculator! Type 'help' for commands.
->> 2 + 3 * 4
+  ╔═╗─┐ ┬┬┌─┐┌┐┌
+  ╠═╣┌┴┬┘││ ││││
+  ╩ ╩┴ └─┴└─┘┘└┘
+
+  A Powerful CLI Calculator
+  Type 'help' for commands or 'exit' to quit
+
+» 2 + 3 * 4
 Result: 14
 
->> sin(30) + cos(60)
+» sin(30) + cos(60)
 Result: 1
 
->> x = sqrt(16)
+» x = sqrt(16)
 Result: 4
 
->> convert 100 cm to m
+» convert 100 cm to m
 100 cm = 1 m
 ```
 
@@ -131,11 +181,11 @@ Result: 4
 | **Assignment** | `<variable> = <expression>` | Assign value to variable | `x = 10`, `area = pi * r^2` |
 | **Conversion** | `convert <value> <from> to <to>` | Convert between units | `convert 5 km to mi` |
 | **History** | `history` | Display calculation history | `history` |
-| **Variables** | `variables` | Show all stored variables | `variables` |
+| **Variables** | `variables` or `vars` | Show all stored variables | `variables` |
 | **Precision** | `precision <digits>` | Set decimal precision | `precision 10` |
 | **Clear** | `clear` or `cls` | Clear terminal screen | `clear` |
 | **Help** | `help` | Show command reference | `help` |
-| **Exit** | `exit` | Exit the calculator | `exit` |
+| **Exit** | `exit` or `quit` | Exit the calculator | `exit` |
 
 ---
 
@@ -145,19 +195,19 @@ Result: 4
 
 ```bash
 # Arithmetic with proper precedence
->> 15 + 25 * 2 - 10 / 5
+» 15 + 25 * 2 - 10 / 5
 Result: 63
 
 # Scientific notation
->> 2e-10 + 3.5E+12
+» 2e-10 + 3.5E+12
 Result: 3500000000000
 
 # Complex expressions with parentheses
->> ((10 + 5) * 2)^2 / 3
+» ((10 + 5) * 2)^2 / 3
 Result: 300
 
 # Factorial operations
->> 10! / (5! * 2!)
+» 10! / (5! * 2!)
 Result: 15120
 ```
 
@@ -165,22 +215,22 @@ Result: 15120
 
 ```bash
 # Trigonometric calculations
->> sin(30) + cos(60) + tan(45)
+» sin(30) + cos(60) + tan(45)
 Result: 2
 
 # Logarithmic functions
->> log(100) + ln(e) + log2(16)
+» log(100) + ln(e) + log2(16)
 Result: 9.60517
 
 # Custom base logarithm
->> log(8, 2)
+» log(8, 2)
 Result: 3
 
 # Statistical functions
->> mean(10, 20, 30, 40, 50)
+» mean(10, 20, 30, 40, 50)
 Result: 30
 
->> median(1, 3, 3, 6, 7, 8, 9)
+» median(1, 3, 3, 6, 7, 8, 9)
 Result: 6
 ```
 
@@ -188,23 +238,25 @@ Result: 6
 
 ```bash
 # Variable assignment and usage
->> radius = 5
+» radius = 5
 Result: 5
 
->> area = pi * radius^2
+» area = pi * radius^2
 Result: 78.5398
 
->> circumference = 2 * pi * radius
+» circumference = 2 * pi * radius
 Result: 31.4159
 
 # View all variables
->> variables
-radius = 5
-area = 78.5398
-circumference = 31.4159
+» variables
+┌─ Stored Variables ───────────────────────────────────────┐
+│ radius          = 5
+│ area            = 78.5398
+│ circumference   = 31.4159
+└──────────────────────────────────────────────────────────┘
 
 # Use constants
->> speed_of_light = c
+» speed_of_light = c
 Result: 299792458
 ```
 
@@ -212,22 +264,22 @@ Result: 299792458
 
 ```bash
 # Length conversions
->> convert 5280 ft to mi
+» convert 5280 ft to mi
 5280 ft = 1 mi
 
->> convert 1000 mm to in
+» convert 1000 mm to in
 1000 mm = 39.3701 in
 
 # Weight conversions
->> convert 2.5 kg to lb
+» convert 2.5 kg to lb
 2.5 kg = 5.51156 lb
 
 # Time conversions
->> convert 90 min to h
+» convert 90 min to h
 90 min = 1.5 h
 
 # Scientific measurements
->> convert 1 km to m
+» convert 1 km to m
 1 km = 1000 m
 ```
 
@@ -235,33 +287,33 @@ Result: 299792458
 
 ```bash
 # Physics calculations
->> F = 9.8 * 75  # Force = mass * acceleration
+» F = 9.8 * 75  # Force = mass * acceleration
 Result: 735
 
->> E = F * 10    # Energy = force * distance
+» E = F * 10    # Energy = force * distance
 Result: 7350
 
 # Financial calculations
->> principal = 1000
+» principal = 1000
 Result: 1000
 
->> rate = 0.05
+» rate = 0.05
 Result: 0.05
 
->> compoundInterest = principal * (1 + rate)^10
+» compoundInterest = principal * (1 + rate)^10
 Result: 1628.89
 
 # Engineering calculations
->> voltage = 12
+» voltage = 12
 Result: 12
 
->> current = 2.5
+» current = 2.5
 Result: 2.5
 
->> power = voltage * current
+» power = voltage * current
 Result: 30
 
->> resistance = voltage / current
+» resistance = voltage / current
 Result: 4.8
 ```
 
@@ -273,9 +325,15 @@ Result: 4.8
 
 ```
 Axion/
-├── main.go                 # CLI interface and REPL
+├── main.go                 # Application entry point
+├── install.sh              # Installation script for Unix/Linux
 ├── constants.json          # Mathematical constants
 ├── history.json           # Persistent calculation history
+├── go.mod                 # Go module definition
+├── go.sum                 # Dependency checksums
+│
+├── cmd/                   # Cobra CLI commands
+│   └── cmd.go            # Root command & REPL implementation
 │
 ├── constants/             # Constants management
 │   └── constants.go       # JSON-based constant loading
@@ -298,25 +356,35 @@ Axion/
 ├── history/              # History management
 │   └── history.go        # JSON-based persistent storage
 │
-├── settings/             # Configuration
-│   └── settings.go       # Precision and display settings
-│
-└── LICENSE               # MIT license
+└── settings/             # Configuration
+    └── settings.go       # Precision and display settings
 ```
 
 ### Processing Pipeline
 
 ```
-Input String
+User Input (REPL)
+     ↓
+[Cobra CLI Handler] → Command Processing
      ↓
 [Tokenizer] → Lexical Analysis → Token Stream
      ↓
-[Parser] → Syntax Analysis → Abstract Syntax Tree
+[Parser] → Syntax Analysis → Abstract Syntax Tree (AST)
      ↓
 [Evaluator] → Mathematical Evaluation → Numerical Result
      ↓
+[Formatter] → Color-Coded Output → Terminal Display
+     ↓
 [History] → Persistent Storage → JSON Archive
 ```
+
+### Key Design Patterns
+
+- **Command Pattern**: Cobra framework for CLI command handling
+- **Recursive Descent**: Parser implementation for expression analysis
+- **Visitor Pattern**: AST traversal in evaluator
+- **Singleton**: Settings and variable storage
+- **Strategy Pattern**: Unit conversion system
 
 ---
 
@@ -360,7 +428,26 @@ func Eval(node *Node) (float64, error)
 var Vars map[string]float64
 ```
 
+#### Units API
+```go
+// Convert performs unit conversion
+func Convert(value float64, from, to string) (float64, error)
+```
 
+#### Cobra Command API
+```go
+// Execute runs the root command
+func Execute() error
+
+// Root command launches interactive REPL
+var rootCmd = &cobra.Command{
+    Use:   "axion",
+    Short: "Axion - A powerful CLI calculator",
+    Run:   startREPL,
+}
+```
+
+### Extending Axion
 
 #### Adding New Functions
 ```go
@@ -386,6 +473,22 @@ case "newfunction":
 }
 ```
 
+#### Adding New Commands
+```go
+// In cmd/cmd.go
+var newCmd = &cobra.Command{
+    Use:   "newcommand",
+    Short: "Description of new command",
+    Run: func(cmd *cobra.Command, args []string) {
+        // Command implementation
+    },
+}
+
+func init() {
+    rootCmd.AddCommand(newCmd)
+}
+```
+
 ---
 
 ## Testing
@@ -406,6 +509,7 @@ go test -v ./...
 go test ./tokenizer
 go test ./parser
 go test ./evaluator
+go test ./units
 
 # Generate coverage report
 go test -coverprofile=coverage.out ./...
@@ -414,15 +518,19 @@ go tool cover -html=coverage.out
 
 ### Test Coverage Statistics
 
-| Module | Coverage | Description |
-|--------|----------|-------------|
-| **Tokenizer** | 98% | Lexical analysis and token generation |
-| **Parser** | 92% | AST construction and precedence handling |
-| **Evaluator** | 95% | Mathematical computation and functions |
-| **Units** | 90% | Unit conversion system |
-| **History** | 88% | Persistent storage management |
-| **Overall** | **95%** | Complete system coverage |
+| Module | Coverage | Test Status | Description |
+|--------|----------|-------------|-------------|
+| **Units** | 100% | Passing | Unit conversion system |
+| **Parser** | 76.4% | Passing | AST construction and precedence handling |
+| **Evaluator** | 74.5% | Passing | Mathematical computation and functions |
+| **Tokenizer** | 68.0% | Passing | Lexical analysis and token generation |
+| **CMD** | 0% | No tests | Cobra CLI handlers (interactive module) |
+| **Constants** | 0% | No tests | Constants management (utility module) |
+| **History** | 0% | No tests | Persistent storage (I/O module) |
+| **Settings** | 0% | No tests | Configuration management (utility module) |
+| **Core Modules** | **79.7%** | Passing | Average coverage of tested modules |
 
+**Note**: Utility modules (constants, history, settings) and the interactive CLI (cmd) currently lack test files. Core computational modules (tokenizer, parser, evaluator, units) have comprehensive test coverage and all tests pass successfully.
 
 ---
 
@@ -441,6 +549,13 @@ We welcome contributions! Axion thrives on community involvement.
 7. **Push** to your branch (`git push origin feature/amazing-feature`)
 8. **Open** a Pull Request with detailed description
 
+### Development Guidelines
+
+- Follow Go standard formatting (`gofmt`, `golint`)
+- Add tests for new features
+- Update documentation for API changes
+- Keep commits atomic and well-described
+- Ensure all tests pass before submitting PR
 
 ---
 
@@ -472,35 +587,10 @@ When reporting bugs, please include:
 
 ---
 
-## License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for complete details.
-
-```
-MIT License
-
-Copyright (c) 2025 Uthman
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-```
-
----
-
 ## Acknowledgments
 
 - **Go Community**: For excellent standard library and tooling
+- **Cobra**: For providing an excellent CLI framework
 - **Mathematical Computing**: Inspired by scientific calculators and computing environments
 - **Open Source**: Built on principles of transparency and collaboration
 - **Contributors**: Thanks to everyone who helps improve Axion
@@ -510,6 +600,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 - Mathematical function implementations inspired by standard libraries
 - Unit conversion factors from international standards
 - Testing methodologies from Go community best practices
+- CLI design patterns from Cobra framework
 
 ---
 
@@ -517,9 +608,9 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 **Uthman** - *Creator*
 
-- 🐱 **GitHub**: [@codetesla51](https://github.com/codetesla51)
--  **Email**: Available through GitHub profile
--  **Project**: [Axion Calculator](https://github.com/codetesla51/Axion)
+- **GitHub**: [@codetesla51](https://github.com/codetesla51)
+- **Email**: Available through GitHub profile
+- **Project**: [Axion Calculator](https://github.com/codetesla51/Axion)
 
 ---
 
@@ -530,10 +621,10 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 ![GitHub issues](https://img.shields.io/github/issues/codetesla51/Axion)
 ![GitHub last commit](https://img.shields.io/github/last-commit/codetesla51/Axion)
 
-**Built with Go**
+**Built with Go & Cobra**
 
 *If you find Axion helpful, please consider giving it a star!*
 
-**[⬆ Back to Top](#axion-calculator)**
+**[Back to Top](#axion-calculator)**
 
 </div>

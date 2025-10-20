@@ -306,5 +306,41 @@
   {
     "expression": "round(-4.5)",
     "result": -5
+  },
+  {
+    "expression": "h",
+    "result": 6.62607015e-34
+  },
+  {
+    "expression": "pi",
+    "result": 3.141592653589793
+  },
+  {
+    "expression": "2+2",
+    "result": 4
+  },
+  {
+    "expression": "h",
+    "result": 6.62607015e-34
+  },
+  {
+    "expression": "2 +2",
+    "result": 4
+  },
+  {
+    "expression": "sin(2)",
+    "result": 0.03489949670250097
+  },
+  {
+    "expression": "log10(100)",
+    "result": 2
+  },
+  {
+    "expression": "5!!",
+    "result": 6.689502913449124e+198
+  },
+  {
+    "expression": "-(-2)",
+    "result": 2
   }
 ]
