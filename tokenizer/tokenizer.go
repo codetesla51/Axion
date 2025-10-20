@@ -48,14 +48,15 @@ import (
 type TokenType int
 
 const (
-	NUMBER   TokenType = iota // 0
-	OPERATOR                  // 1
-	PAREN                     // 2
-	FUNCTION                  // 3
-	IDENT                     // 4
-	ASSIGN                    // 5
+	NUMBER TokenType = iota     // 0 - numeric literals
+	OPERATOR                    // 1 - arithmetic operators (+, -, *, /, ^)
+	PAREN                       // 2 - parentheses
+	FUNCTION                    // 3 - functions (sin, cos, log, etc.)
+	IDENT                       // 4 - identifiers/variables
+	ASSIGN                      // 5 - assignment (=)
+	COMPARISON                  // 6 - comparison operators (>, <, >=, <=, ==, !=)
+	LOGICAL                     // 7 - logical operators (&&, ||, !)
 )
-
 // Token represents a lexical unit
 type Token struct {
 	Type  TokenType
@@ -163,9 +164,59 @@ func Tokenize(input string) ([]Token, error) {
 				}
 				wordBuffer = ""
 			}
+			if i+1 < len(input){
+         next := rune(input[i+1])
+         if next == '='{
+           addToken(Token{Type: COMPARISON, Value: string (ch) + string (next)})
+           i++
+           continue 
+         }
+       }
 			addToken(Token{Type: ASSIGN, Value: "="})
-
-		// Handle parentheses
+       case ch == '>' || ch == '<':
+       if numberBuffer != "" {
+				addToken(Token{Type: NUMBER, Value: numberBuffer})
+				numberBuffer = ""
+			}
+			if wordBuffer != "" {
+				if isMathFunction(wordBuffer) {
+					addToken(Token{Type: FUNCTION, Value: wordBuffer})
+				} else {
+					addToken(Token{Type: IDENT, Value: wordBuffer})
+				}
+				wordBuffer = ""
+			}
+       if i+1 < len(input){
+         next := rune(input[i+1])
+         if next == '='{
+           addToken(Token{Type: COMPARISON, Value: string (ch) + string (next)})
+           i++
+           continue 
+         }
+       }
+       addToken(Token{Type: COMPARISON, Value: string (ch)})
+       case ch == '&' || ch == '|':
+       if numberBuffer != "" {
+				addToken(Token{Type: NUMBER, Value: numberBuffer})
+				numberBuffer = ""
+			}
+			if wordBuffer != "" {
+				if isMathFunction(wordBuffer) {
+					addToken(Token{Type: FUNCTION, Value: wordBuffer})
+				} else {
+					addToken(Token{Type: IDENT, Value: wordBuffer})
+				}
+				wordBuffer = ""
+			}
+			if i+1 < len(input){
+         next := rune(input[i+1])
+         if next ==  ch{
+           addToken(Token{Type: LOGICAL, Value: string (ch) + string (next)})
+           i++
+           continue 
+         }
+       }
+return nil,fmt.Errorf("Invalid logical Operator : %q", ch)       
 		case ch == '(' || ch == ')':
 			// Flush buffers
 			if numberBuffer != "" {
@@ -197,6 +248,15 @@ func Tokenize(input string) ([]Token, error) {
 				}
 				wordBuffer = ""
 			}
+			  if i+1 < len(input){
+         next := rune(input[i+1])
+         if next == '='{
+           addToken(Token{Type: COMPARISON, Value: string (ch) + string (next)})
+           i++
+           continue 
+         }
+       }
+       
 			addToken(Token{Type: FUNCTION, Value: "!"})
 
 		// Handle whitespace
@@ -287,6 +347,9 @@ func isMathFunction(word string) bool {
 		// Statistical
 		"max": true, "min": true, "mean": true, "median": true,
 		"mode": true, "sum": true, "product": true,
+		
+		//reserved
+		"print" : true,
 	}
 	return functions[word]
 }

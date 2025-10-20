@@ -230,7 +230,85 @@ func TestTokenize_ImplicitMultiplication(t *testing.T) {
 		})
 	}
 }
+func TestTokenize_LogicalAndComparison(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  []Token
+	}{
+		{
+			name:  "logical AND",
+			input: "4 && 5",
+			want: []Token{
+				{Type: NUMBER, Value: "4"},
+				{Type: LOGICAL, Value: "&&"},
+				{Type: NUMBER, Value: "5"},
+			},
+		},
+		{
+			name:  "logical OR",
+			input: "4 || 5",
+			want: []Token{
+				{Type: NUMBER, Value: "4"},
+				{Type: LOGICAL, Value: "||"},
+				{Type: NUMBER, Value: "5"},
+			},
+		},
+		{
+			name:  "greater than",
+			input: "6 > 5",
+			want: []Token{
+				{Type: NUMBER, Value: "6"},
+				{Type: COMPARISON, Value: ">"},
+				{Type: NUMBER, Value: "5"},
+			},
+		},
+		{
+			name:  "greater than or equal to",
+			input: "6 >= 5",
+			want: []Token{
+				{Type: NUMBER, Value: "6"},
+				{Type: COMPARISON, Value: ">="},
+				{Type: NUMBER, Value: "5"},
+			},
+		},
+		{
+			name:  "less than or equal to",
+			input: "4 <= 9",
+			want: []Token{
+				{Type: NUMBER, Value: "4"},
+				{Type: COMPARISON, Value: "<="},
+				{Type: NUMBER, Value: "9"},
+			},
+		},
+		{
+			name:  "equality",
+			input: "6 == 7",
+			want: []Token{
+				{Type: NUMBER, Value: "6"},
+				{Type: COMPARISON, Value: "=="},
+				{Type: NUMBER, Value: "7"},
+			},
+		},
+		{
+			name:  "not equal",
+			input: "3 != 4",
+			want: []Token{
+				{Type: NUMBER, Value: "3"},
+				{Type: COMPARISON, Value: "!="},
+				{Type: NUMBER, Value: "4"},
+			},
+		},
+	}
 
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := Tokenize(tt.input)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
 func TestTokenize_Errors(t *testing.T) {
 	tests := []struct {
 		name  string

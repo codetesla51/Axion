@@ -121,7 +121,7 @@ func Eval(node *parser.Node) (float64, error) {
 		return 0, fmt.Errorf("undefined variable or constant %s", node.Value)
 
 	case parser.NODE_OPERATOR:
-		if node.Value == "neg" { // unary negation
+		if node.Value == "neg" {
 			left, err := Eval(node.Left)
 			if err != nil {
 				return 0, err
@@ -169,7 +169,6 @@ func Eval(node *parser.Node) (float64, error) {
 	case parser.NODE_FUNCTION:
 		switch node.Value {
 
-		// EXISTING SINGLE-ARGUMENT FUNCTIONS
 		case "sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "exp", "abs", "ceil", "floor", "!":
 			if len(node.Children) < 1 {
 				return 0, fmt.Errorf("%s requires 1 argument", node.Value)
@@ -220,7 +219,6 @@ func Eval(node *parser.Node) (float64, error) {
 				return factorial(arg1)
 			}
 
-		// FIXED: Added proper handling for ln, log10, log2, and other single-arg functions
 		case "ln", "log10", "log2", "round", "trunc", "sign", "deg2rad", "rad2deg":
 			if len(node.Children) < 1 {
 				return 0, fmt.Errorf("%s requires 1 argument", node.Value)
@@ -329,7 +327,19 @@ func Eval(node *parser.Node) (float64, error) {
 				return vals[n/2], nil
 			}
 			return (vals[n/2-1] + vals[n/2]) / 2, nil
-
+      case "print":
+      if len(node.Children) < 1{
+        return 0, fmt.Errorf("Print requires one argument")
+      }
+      var printResult float64
+        for _,child := range node.Children{
+        result, err := Eval(child)
+        if err != nil{
+          return 0,err
+        }
+        printResult = result 
+      }
+      return printResult,nil
 		case "mode":
 			if len(node.Children) < 1 {
 				return 0, fmt.Errorf("mode requires at least 1 argument")
@@ -406,7 +416,7 @@ func Eval(node *parser.Node) (float64, error) {
 					sum += val
 				}
 				return sum, nil
-			} else { // product
+			} else { 
 				product := 1.0
 				for _, child := range node.Children {
 					val, err := Eval(child)

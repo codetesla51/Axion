@@ -342,5 +342,117 @@
   {
     "expression": "-(-2)",
     "result": 2
+  },
+  {
+    "expression": "log10(100)",
+    "result": 2
+  },
+  {
+    "expression": "round(-4)",
+    "result": -4
+  },
+  {
+    "expression": "round(-4.5)",
+    "result": -5
+  },
+  {
+    "expression": "sin(30)",
+    "result": 0.49999999999999994
+  },
+  {
+    "expression": "5!",
+    "result": 120
+  },
+  {
+    "expression": "ln(4)",
+    "result": 1.3862943611198906
+  },
+  {
+    "expression": "x = 5",
+    "result": 5
+  },
+  {
+    "expression": "x + 5",
+    "result": 10
+  },
+  {
+    "expression": "r = 5",
+    "result": 5
+  },
+  {
+    "expression": "pi",
+    "result": 3.141592653589793
+  },
+  {
+    "expression": "pi * 2",
+    "result": 6.283185307179586
+  },
+  {
+    "expression": "pi * r^2",
+    "result": 78.53981633974483
+  },
+  {
+    "expression": "pi * r^2",
+    "result": 78.53981633974483
+  },
+  {
+    "expression": "print(1)",
+    "result": 0
+  },
+  {
+    "expression": "print(2)",
+    "result": 0
+  },
+  {
+    "expression": "print(1)",
+    "result": 0
+  },
+  {
+    "expression": "print(1)",
+    "result": 0
+  },
+  {
+    "expression": "print(5)",
+    "result": 0
+  },
+  {
+    "expression": "print(1)",
+    "result": 0
+  },
+  {
+    "expression": "print(5-5)",
+    "result": 0
+  },
+  {
+    "expression": "print(2)",
+    "result": 0
+  },
+  {
+    "expression": "r = 5",
+    "result": 5
+  },
+  {
+    "expression": "print(r)",
+    "result": 0
+  },
+  {
+    "expression": "print(2)",
+    "result": 0
+  },
+  {
+    "expression": "print(2)",
+    "result": 0
+  },
+  {
+    "expression": "print(4)",
+    "result": 4
+  },
+  {
+    "expression": "print(5)",
+    "result": 5
+  },
+  {
+    "expression": "print(sin(30))",
+    "result": 0.49999999999999994
   }
 ]

@@ -296,7 +296,6 @@ func handleExpression(input string) {
 		fmt.Printf(colorRed+"Error: %v\n"+colorReset, err)
 		return
 	}
-
 	p := parser.Parser{Tokens: tokens}
 	ast, err := p.ParseExpression()
 	if err != nil {
