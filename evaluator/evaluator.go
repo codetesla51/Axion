@@ -137,7 +137,6 @@ func Eval(node *parser.Node) (float64, error) {
 		if err != nil {
 			return 0, err
 		}
-
 		switch node.Value {
 		case "+":
 			return left + right, nil
@@ -165,7 +164,76 @@ func Eval(node *parser.Node) (float64, error) {
 		default:
 			return 0, fmt.Errorf("unknown operator %q", node.Value)
 		}
+case parser.NODE_COMPARISON:
+left, err := Eval(node.Left)
+if err != nil{
+  return 0, err
+}
 
+    right, err:= Eval(node.Right)
+    if err != nil{
+      return 0,err
+    }
+switch node.Value {
+case ">":
+    if left > right {
+        return 1.0,nil
+    }
+    return 0.0,nil
+case "<":
+    if left < right {
+        return 1.0,nil
+    }
+    return 0.0,nil
+case ">=":
+    if left >= right {
+        return 1.0,nil
+    }
+    return 0.0,nil
+case "<=":
+    if left <= right {
+        return 1.0,nil
+    }
+    return 0.0,nil
+case "==":
+    if left == right {
+        return 1.0,nil
+    }
+    return 0.0,nil
+case "!=":
+    if left != right {
+        return 1.0,nil
+    }
+    return 0.0,nil
+} 
+case parser.NODE_OR:
+    left, err := Eval(node.Left)
+if err != nil{
+  return 0, err
+}
+
+    right, err:= Eval(node.Right)
+    if err != nil{
+      return 0,err
+    }
+    if (left != 0) || (right!= 0){
+      return 1,nil
+    }
+    return 0,nil
+    case parser.NODE_AND:
+    left, err := Eval(node.Left)
+if err != nil{
+  return 0, err
+}
+
+    right, err:= Eval(node.Right)
+    if err != nil{
+      return 0,err
+    }
+    if (left != 0) && (right!= 0){
+      return 1,nil
+    }
+    return 0,nil
 	case parser.NODE_FUNCTION:
 		switch node.Value {
 

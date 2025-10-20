@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestEvaluator_BugFixes(t *testing.T) {
+func TestEvaluator(t *testing.T) {
 	for _, tt := range []struct {
 		name      string
 		input     string
@@ -73,7 +73,72 @@ func TestEvaluator_BugFixes(t *testing.T) {
 		{"very large number", "1e308", 1e308, false},
 		{"very small number", "1e-308", 1e-308, false},
 		{"scientific notation", "6.022e23", 6.022e23, false},
-		
+		// Comparison operators
+{"greater than true", "5 > 3", 1, false},
+{"greater than false", "3 > 5", 0, false},
+{"greater than equal", "5 > 5", 0, false},
+{"less than true", "3 < 5", 1, false},
+{"less than false", "5 < 3", 0, false},
+{"less than equal", "5 < 5", 0, false},
+{"greater or equal true greater", "5 >= 3", 1, false},
+{"greater or equal true equal", "5 >= 5", 1, false},
+{"greater or equal false", "3 >= 5", 0, false},
+{"less or equal true less", "3 <= 5", 1, false},
+{"less or equal true equal", "5 <= 5", 1, false},
+{"less or equal false", "5 <= 3", 0, false},
+{"equal true", "5 == 5", 1, false},
+{"equal false", "5 == 3", 0, false},
+{"not equal true", "5 != 3", 1, false},
+{"not equal false", "5 != 5", 0, false},
+
+// Logical operators
+{"logical and both true", "1 && 1", 1, false},
+{"logical and first false", "0 && 1", 0, false},
+{"logical and second false", "1 && 0", 0, false},
+{"logical and both false", "0 && 0", 0, false},
+{"logical and with numbers", "5 && 3", 1, false},
+{"logical and with zero", "5 && 0", 0, false},
+{"logical or both true", "1 || 1", 1, false},
+{"logical or first true", "1 || 0", 1, false},
+{"logical or second true", "0 || 1", 1, false},
+{"logical or both false", "0 || 0", 0, false},
+{"logical or with numbers", "5 || 3", 1, false},
+{"logical or with zero", "0 || 5", 1, false},
+
+// Combined comparisons and logical operators
+{"comparison with and", "(5 > 3) && (2 < 4)", 1, false},
+{"comparison with or", "(5 < 3) || (2 < 4)", 1, false},
+{"multiple comparisons and", "(5 > 3) && (2 < 4) && (1 == 1)", 1, false},
+{"multiple comparisons or", "(5 < 3) || (2 > 4) || (1 == 1)", 1, false},
+{"mixed and or", "(5 > 3) && (2 < 4) || (1 > 2)", 1, false},
+{"precedence and before or", "0 || 1 && 0", 0, false},
+{"precedence and before or true", "1 || 0 && 0", 1, false},
+
+// Comparisons with arithmetic
+{"arithmetic in comparison left", "2 + 3 > 4", 1, false},
+{"arithmetic in comparison right", "5 > 2 + 2", 1, false},
+{"arithmetic both sides", "2 + 3 == 1 + 4", 1, false},
+{"complex arithmetic comparison", "2 * 3 > 4 + 1", 1, false},
+{"comparison with parentheses", "(2 + 3) * 2 > 8", 1, false},
+
+// Logical with arithmetic
+{"arithmetic with and", "2 + 3 > 4 && 1", 1, false},
+{"arithmetic with or", "2 + 3 < 4 || 1", 1, false},
+{"complex logical arithmetic", "(2 + 3) > 4 && (5 - 2) < 4", 1, false},
+
+// Assignment with comparisons and logical
+{"assign comparison result", "x = 5 > 3", 1, false},
+{"assign logical result", "x = 1 && 1", 1, false},
+{"assign complex logical", "x = (5 > 3) && (2 < 4)", 1, false},
+
+// Edge cases
+{"comparison with zero", "0 > 0", 0, false},
+{"comparison with negative", "-5 < 0", 1, false},
+{"comparison negative both", "-5 > -3", 0, false},
+{"logical with negative", "-5 && 3", 1, false},
+{"comparison with float", "2.5 > 2.4", 1, false},
+{"comparison float equal", "2.5 == 2.5", 1, false},
+{"not equal with float", "2.5 != 2.50001", 1, false},
 		// Division edge cases
 		{"zero divided by number", "0/5", 0, false},
 		
