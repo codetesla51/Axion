@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"bytes"
 	"os"
 )
 
@@ -86,23 +87,25 @@ func AddHistory(input string, result float64) error {
 	// Append new entry to existing history
 	history = append(history, entry)
 
-	// Serialize updated history with readable formatting
-	updatedContent, err := json.MarshalIndent(history, "", "  ")
+	// Serialize updated history with readable formatting (no HTML escaping)
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+	encoder.SetEscapeHTML(false) 
+	encoder.SetIndent("", "  ")   
+	
+	err = encoder.Encode(history)
 	if err != nil {
-		// Return error for serialization failure
 		return err
 	}
 
 	// Write updated history to file with appropriate permissions
-	err = os.WriteFile(HistoryFile, updatedContent, 0644)
+	err = os.WriteFile(HistoryFile, buffer.Bytes(), 0644)
 	if err != nil {
-		// Return error for write failure
 		return err
 	}
 
 	return nil
 }
-
 // ShowHistory displays the complete calculation history in reverse order
 // Most recent calculations are shown first for better user experience
 func ShowHistory() error {

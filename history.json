@@ -1,311 +1,55 @@
 [
   {
-    "expression": "2e-10 + 3.5E+12",
-    "result": 3500000000000
+    "expression": "derivative(x^2,5)",
+    "result": 9.99999993922529
   },
   {
-    "expression": "2e-10 + 3.5E+12",
-    "result": 3500000000000
+    "expression": "derivative(e^x, 1)",
+    "result": 2.7182818218562943
   },
   {
-    "expression": "r = pi",
-    "result": 3.141592653589793
+    "expression": "derivative(sin(x),0)",
+    "result": 0.017453292519943295
   },
   {
-    "expression": "r",
-    "result": 3.141592653589793
+    "expression": "derivative(ln(x), 2.718)",
+    "result": 0.36791758528664786
   },
   {
-    "expression": "F = 9.8 * 75",
-    "result": 735
+    "expression": "fib(10)",
+    "result": 1
   },
   {
-    "expression": "E = F * 10",
-    "result": 7350
+    "expression": "fib(50)",
+    "result": 1
   },
   {
-    "expression": "principal = 1000",
-    "result": 1000
+    "expression": "fib(10)",
+    "result": 55
   },
   {
-    "expression": "rate = 0.05",
-    "result": 0.05
-  },
-  {
-    "expression": "compound = principal * (1 + rate)^10",
-    "result": 1628.8946267774415
-  },
-  {
-    "expression": "10! / (5! * 2!)",
-    "result": 15120
-  },
-  {
-    "expression": "2e-10 + 3.5E+12",
-    "result": 3500000000000
-  },
-  {
-    "expression": "log(100) + ln(e) + log2(16)",
-    "result": 11.150347630467653
-  },
-  {
-    "expression": "sin(30) + cos(60) + tan(45)",
-    "result": 1.9999999999999998
-  },
-  {
-    "expression": "((10 + 5) * 2)^2 / 3",
-    "result": 300
-  },
-  {
-    "expression": "x=5",
-    "result": 5
-  },
-  {
-    "expression": "x = 5",
-    "result": 5
-  },
-  {
-    "expression": "x + 3",
-    "result": 8
-  },
-  {
-    "expression": "r = 5",
-    "result": 5
-  },
-  {
-    "expression": "pi * r^2",
-    "result": 78.53981633974483
-  },
-  {
-    "expression": "log(2)",
-    "result": 0.6931471805599453
-  },
-  {
-    "expression": "ln(2)",
-    "result": 0.6931471805599453
-  },
-  {
-    "expression": "mean(1,2,3,4)",
-    "result": 2.5
-  },
-  {
-    "expression": "5!!",
-    "result": 6.689502913449124e+198
-  },
-  {
-    "expression": "3!!l",
-    "result": 720
-  },
-  {
-    "expression": "3!",
-    "result": 6
-  },
-  {
-    "expression": "3!!",
-    "result": 720
-  },
-  {
-    "expression": "log(100) + ln(e) + log2(16)",
-    "result": 11.150347630467653
-  },
-  {
-    "expression": "100 - 1 + 99",
-    "result": 198
-  },
-  {
-    "expression": "100 -1 + 90",
-    "result": 189
-  },
-  {
-    "expression": "x = 5",
-    "result": 5
-  },
-  {
-    "expression": "x = 20",
-    "result": 20
-  },
-  {
-    "expression": "log(10)",
-    "result": 2.302585092994046
-  },
-  {
-    "expression": "log(100)",
-    "result": 4.605170185988092
-  },
-  {
-    "expression": "log(20)",
-    "result": 2.995732273553991
-  },
-  {
-    "expression": "log10(100)",
-    "result": 46.05170185988092
-  },
-  {
-    "expression": "ln(100)",
-    "result": 4.605170185988092
-  },
-  {
-    "expression": "log(1000)",
-    "result": 6.907755278982137
-  },
-  {
-    "expression": "log(100)",
-    "result": 4.605170185988092
-  },
-  {
-    "expression": "log(1000)",
-    "result": 6.907755278982137
-  },
-  {
-    "expression": "log(100)",
-    "result": 4.605170185988092
-  },
-  {
-    "expression": "log(100)",
-    "result": 4.605170185988092
-  },
-  {
-    "expression": "2 / 5",
-    "result": 0.4
-  },
-  {
-    "expression": "1/2",
-    "result": 0.5
-  },
-  {
-    "expression": "log(200)",
-    "result": 5.298317366548036
-  },
-  {
-    "expression": "log(100)",
-    "result": 4.605170185988092
-  },
-  {
-    "expression": "round(100.1)",
-    "result": 100
-  },
-  {
-    "expression": "round(0.4)",
+    "expression": "derivative(x^2,5)",
     "result": 0
   },
   {
-    "expression": "round(0.5)",
-    "result": 1
+    "expression": "derivative(x^2,5)",
+    "result": 0
   },
   {
-    "expression": "log(100)",
-    "result": 2
+    "expression": "derivative(sin(x),0)",
+    "result": 0
   },
   {
-    "expression": "log(2,100)",
-    "result": 0.15051499783199057
+    "expression": "derivative(x^2,5)",
+    "result": 9.99999993922529
   },
   {
-    "expression": "log(10,100)",
-    "result": 0.5
+    "expression": "fib(20)",
+    "result": 6765
   },
   {
-    "expression": "log(10,1000)",
-    "result": 0.33333333333333337
-  },
-  {
-    "expression": "log(100,2)",
-    "result": 6.643856189774725
-  },
-  {
-    "expression": "log(100,10)",
-    "result": 2
-  },
-  {
-    "expression": "2+2",
-    "result": 4
-  },
-  {
-    "expression": "-5",
-    "result": -5
-  },
-  {
-    "expression": "+4",
-    "result": 4
-  },
-  {
-    "expression": "5--5",
-    "result": 10
-  },
-  {
-    "expression": "-(-5)",
+    "expression": "fib(5)",
     "result": 5
-  },
-  {
-    "expression": "2++3",
-    "result": 5
-  },
-  {
-    "expression": "max (5,10)",
-    "result": 10
-  },
-  {
-    "expression": "log(100)",
-    "result": 2
-  },
-  {
-    "expression": "log10(100)",
-    "result": 20
-  },
-  {
-    "expression": "log10(100)",
-    "result": 20
-  },
-  {
-    "expression": "mod(1,2)",
-    "result": 1
-  },
-  {
-    "expression": "log10(100)",
-    "result": 20
-  },
-  {
-    "expression": "log10(100)",
-    "result": 2
-  },
-  {
-    "expression": "round(-4.0)",
-    "result": -4
-  },
-  {
-    "expression": "round(-.44)",
-    "result": -0
-  },
-  {
-    "expression": "round(-4.4)",
-    "result": -4
-  },
-  {
-    "expression": "atan2(1,1)",
-    "result": 45
-  },
-  {
-    "expression": "atan2(1,-1)",
-    "result": -45
-  },
-  {
-    "expression": "atan2(1,-1)",
-    "result": -45
-  },
-  {
-    "expression": "atan2(-1,1)",
-    "result": 135
-  },
-  {
-    "expression": "atan2(1,-1)",
-    "result": 135
-  },
-  {
-    "expression": "atan2(-1,1)",
-    "result": -45
-  },
-  {
-    "expression": "round(-4.5)",
-    "result": -5
   },
   {
     "expression": "h",
@@ -316,183 +60,195 @@
     "result": 3.141592653589793
   },
   {
-    "expression": "2+2",
+    "expression": "pi < h",
+    "result": 0
+  },
+  {
+    "expression": "h > pi",
+    "result": 0
+  },
+  {
+    "expression": "pi > h",
+    "result": 1
+  },
+  {
+    "expression": "4+6",
+    "result": 10
+  },
+  {
+    "expression": "888884857575747584848 *47485757575747474",
+    "result": 4.220937085959477e+37
+  },
+  {
+    "expression": "print(x=4)",
     "result": 4
   },
   {
-    "expression": "h",
-    "result": 6.62607015e-34
+    "expression": "print(x * 5/ 16) + pi",
+    "result": 4.391592653589793
   },
   {
-    "expression": "2 +2",
-    "result": 4
+    "expression": "2+3",
+    "result": 5
   },
   {
-    "expression": "sin(2)",
-    "result": 0.03489949670250097
+    "expression": "x = 5 * 5",
+    "result": 25
   },
   {
-    "expression": "log10(100)",
-    "result": 2
+    "expression": "print(x)",
+    "result": 25
   },
   {
-    "expression": "5!!",
-    "result": 6.689502913449124e+198
+    "expression": "x < 11",
+    "result": 0
   },
   {
-    "expression": "-(-2)",
-    "result": 2
+    "expression": "x < 2",
+    "result": 0
   },
   {
-    "expression": "log10(100)",
-    "result": 2
-  },
-  {
-    "expression": "round(-4)",
-    "result": -4
-  },
-  {
-    "expression": "round(-4.5)",
-    "result": -5
+    "expression": "x > 2",
+    "result": 1
   },
   {
     "expression": "sin(30)",
     "result": 0.49999999999999994
   },
   {
+    "expression": "log2(10)",
+    "result": 3.321928094887362
+  },
+  {
     "expression": "5!",
     "result": 120
   },
   {
-    "expression": "ln(4)",
-    "result": 1.3862943611198906
+    "expression": "fib(2)",
+    "result": 1
+  },
+  {
+    "expression": "2 + 2",
+    "result": 4
+  },
+  {
+    "expression": "6 *5 +7",
+    "result": 37
+  },
+  {
+    "expression": "sin(20)",
+    "result": 0.3420201433256687
+  },
+  {
+    "expression": "r = 6",
+    "result": 6
+  },
+  {
+    "expression": "pi * r^2",
+    "result": 113.09733552923255
+  },
+  {
+    "expression": "print(pi)",
+    "result": 3.141592653589793
+  },
+  {
+    "expression": "log(100)",
+    "result": 2
+  },
+  {
+    "expression": "ln(100)",
+    "result": 4.605170185988092
+  },
+  {
+    "expression": "mean(2,3,4,4)",
+    "result": 3.25
+  },
+  {
+    "expression": "5 < 5",
+    "result": 0
+  },
+  {
+    "expression": "4 == 4",
+    "result": 1
+  },
+  {
+    "expression": "5  || 5",
+    "result": 1
+  },
+  {
+    "expression": "fib(20)",
+    "result": 6765
+  },
+  {
+    "expression": "5!",
+    "result": 120
+  },
+  {
+    "expression": "-5(-5)",
+    "result": 25
+  },
+  {
+    "expression": "2 + 3",
+    "result": 5
+  },
+  {
+    "expression": "5 * 7",
+    "result": 35
+  },
+  {
+    "expression": "sin(20)",
+    "result": 0.3420201433256687
+  },
+  {
+    "expression": "log10(100)",
+    "result": 2
+  },
+  {
+    "expression": "r = 6",
+    "result": 6
+  },
+  {
+    "expression": "print(r)",
+    "result": 6
+  },
+  {
+    "expression": "r < 5",
+    "result": 0
+  },
+  {
+    "expression": "r > 2",
+    "result": 1
+  },
+  {
+    "expression": "pi * e",
+    "result": 8.539734222673566
+  },
+  {
+    "expression": "pi * r^2",
+    "result": 113.09733552923255
+  },
+  {
+    "expression": "fib(20)",
+    "result": 6765
+  },
+  {
+    "expression": "5!!",
+    "result": 6.689502913449124e+198
+  },
+  {
+    "expression": "-5(-5)",
+    "result": 25
   },
   {
     "expression": "x = 5",
     "result": 5
   },
   {
-    "expression": "x + 5",
-    "result": 10
+    "expression": "x * x",
+    "result": 25
   },
   {
-    "expression": "r = 5",
-    "result": 5
-  },
-  {
-    "expression": "pi",
-    "result": 3.141592653589793
-  },
-  {
-    "expression": "pi * 2",
-    "result": 6.283185307179586
-  },
-  {
-    "expression": "pi * r^2",
-    "result": 78.53981633974483
-  },
-  {
-    "expression": "pi * r^2",
-    "result": 78.53981633974483
-  },
-  {
-    "expression": "print(1)",
-    "result": 0
-  },
-  {
-    "expression": "print(2)",
-    "result": 0
-  },
-  {
-    "expression": "print(1)",
-    "result": 0
-  },
-  {
-    "expression": "print(1)",
-    "result": 0
-  },
-  {
-    "expression": "print(5)",
-    "result": 0
-  },
-  {
-    "expression": "print(1)",
-    "result": 0
-  },
-  {
-    "expression": "print(5-5)",
-    "result": 0
-  },
-  {
-    "expression": "print(2)",
-    "result": 0
-  },
-  {
-    "expression": "r = 5",
-    "result": 5
-  },
-  {
-    "expression": "print(r)",
-    "result": 0
-  },
-  {
-    "expression": "print(2)",
-    "result": 0
-  },
-  {
-    "expression": "print(2)",
-    "result": 0
-  },
-  {
-    "expression": "print(4)",
-    "result": 4
-  },
-  {
-    "expression": "print(5)",
-    "result": 5
-  },
-  {
-    "expression": "print(sin(30))",
-    "result": 0.49999999999999994
-  },
-  {
-    "expression": "4 \u003c 5",
-    "result": 1
-  },
-  {
-    "expression": "5 \u003c 6",
-    "result": 1
-  },
-  {
-    "expression": "5 \u003e 6",
-    "result": 0
-  },
-  {
-    "expression": "5 \u0026\u0026 5",
-    "result": 1
-  },
-  {
-    "expression": "6 \u0026\u0026 7",
-    "result": 1
-  },
-  {
-    "expression": "5 == 9",
-    "result": 0
-  },
-  {
-    "expression": "(5 \u003e 3) \u0026\u0026 (2 \u003c 4)",
-    "result": 1
-  },
-  {
-    "expression": "x = 10",
-    "result": 10
-  },
-  {
-    "expression": "(x \u003e 5) || (x \u003c 0)",
-    "result": 1
-  },
-  {
-    "expression": "2 + 3 \u003e 4 \u0026\u0026 1",
-    "result": 1
+    "expression": "mean(1,2,3,4,4)",
+    "result": 2.8
   }
 ]

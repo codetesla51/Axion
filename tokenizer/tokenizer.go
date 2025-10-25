@@ -254,6 +254,8 @@ func isMathFunction(word string) bool {
 
 		//reserved
 		"print": true,
+		"derivative": true,
+		"fib": true,
 	}
 	return functions[word]
 }

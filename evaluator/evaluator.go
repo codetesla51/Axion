@@ -88,7 +88,89 @@ func factorial(n float64) (float64, error) {
 	}
 	return result, nil
 }
+func derivative(node *parser.Node, point float64) (float64, error) {
+    h := 1e-8
+    
+    originalX, hadX := Vars["x"]
+    
+    Vars["x"] = point + h
+    fPlus, err := Eval(node)
+    if err != nil {
+        return 0, err
+    }
+    
+    Vars["x"] = point - h
+    fMinus, err := Eval(node)
+    if err != nil {
+        return 0, err
+    }
+    
+    if hadX {
+        Vars["x"] = originalX
+    } else {
+        delete(Vars, "x")
+    }
+    
+    // Central difference formula
+    return (fPlus - fMinus) / (2 * h), nil
+}
 
+
+func integral(node *parser.Node, a, b float64) (float64, error) {
+    n := 1000  
+    h := (b - a) / float64(n)
+    
+    originalX, hadX := Vars["x"]
+    
+    // Simpson's rule: (h/3) * [f(a) + 4*f(mid) + 2*f(even) + ... + f(b)]
+    Vars["x"] = a
+    fa, err := Eval(node)
+    if err != nil {
+        return 0, err
+    }
+    
+    Vars["x"] = b
+    fb, err := Eval(node)
+    if err != nil {
+        return 0, err
+    }
+    
+    sum := fa + fb
+    
+    for i := 1; i < n; i++ {
+        Vars["x"] = a + float64(i)*h
+        fx, err := Eval(node)
+        if err != nil {
+            return 0, err
+        }
+        
+        if i%2 == 0 {
+            sum += 2 * fx
+        } else {
+            sum += 4 * fx
+        }
+    }
+    
+    if hadX {
+        Vars["x"] = originalX
+    } else {
+        delete(Vars, "x")
+    }
+    
+    return sum * h / 3, nil
+}
+
+func fibb(n int) (float64,error) {
+    if n <= 1 {
+        return float64(n),nil
+    }
+    
+    a, b := 0.0, 1.0
+    for i := 2; i <= n; i++ {
+        a, b = b, a+b
+    }
+    return b,nil
+}
 // Eval recursively evaluates an AST node and returns its numeric value
 func Eval(node *parser.Node) (float64, error) {
 	if node == nil {
@@ -283,6 +365,7 @@ func Eval(node *parser.Node) (float64, error) {
 				return math.Ceil(arg1), nil
 			case "floor":
 				return math.Floor(arg1), nil
+				
 			case "!":
 				return factorial(arg1)
 			}
@@ -427,7 +510,21 @@ func Eval(node *parser.Node) (float64, error) {
 				}
 			}
 			return mode, nil
-
+      case "fib":
+      if len(node.Children) < 1{
+        return 0, fmt.Errorf("%s Requires 1 Argument ", node.Value)
+      }
+        arg,err := Eval(node.Children[0])
+        if err != nil{
+          return 0,err
+        }
+        nInt := int(arg)
+        if nInt < 0{
+          return 0, fmt.Errorf("Fibonacci: argument cannot be negative")
+        }
+      
+      return fibb(nInt)
+              
 		// TWO-ARGUMENT FUNCTIONS
 		case "pow", "max", "min", "atan2", "mod":
 			if len(node.Children) < 2 {
@@ -481,7 +578,7 @@ func Eval(node *parser.Node) (float64, error) {
 					if err != nil {
 						return 0, err
 					}
-					sum += val
+					sum += val 
 				}
 				return sum, nil
 			} else {
@@ -495,7 +592,18 @@ func Eval(node *parser.Node) (float64, error) {
 				}
 				return product, nil
 			}
-
+case "derivative":
+    if len(node.Children) != 2 {
+        return 0, fmt.Errorf("derivative requires 2 arguments: derivative(expression, point)")
+    }
+    
+    expression := node.Children[0]  
+    point, err := Eval(node.Children[1])
+    if err != nil {
+        return 0, err
+    }
+    
+    return derivative(expression, point)
 		default:
 			return 0, fmt.Errorf("unknown function %q", node.Value)
 		}
