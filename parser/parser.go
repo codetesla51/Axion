@@ -126,7 +126,7 @@ func (p *Parser) parseAssignment() (*Node, error) {
 		}, nil
 	}
 
-	return p.parseLogicalOr() // ← Changed from parseAddSub()
+	return p.parseLogicalOr() 
 }
 
 func (p *Parser) parseLogicalOr() (*Node, error) {
